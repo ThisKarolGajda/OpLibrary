@@ -7,11 +7,13 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -26,11 +28,14 @@ public abstract class ChestInventory extends AbstractInventory {
     private Inventory inventory;
     private final int rows;
     private int currentPage = 0;
+    private Consumer<InventoryClickEvent> clickEventConsumer;
+    private Consumer<InventoryDragEvent> dragEventConsumer;
 
     public ChestInventory(String path, int rows) {
         super(path);
         this.rows = rows;
     }
+
     public void fillEmpty(String id, int page, ItemStack item, Consumer<InventoryClickEvent> action) {
         fillEmpty(id, page, item, action, new HashMap<>());
     }
@@ -74,6 +79,7 @@ public abstract class ChestInventory extends AbstractInventory {
     public void setNextFree(String id, ItemStack item, Consumer<InventoryClickEvent> action) {
         setNextFree(id, item, action, new HashMap<>());
     }
+
     public void setItem(String id, int slot, ItemStack item, Consumer<InventoryClickEvent> action, Map<String, String> replacements) {
         setItem(id, 0, slot, item, action, replacements);
     }
@@ -108,6 +114,33 @@ public abstract class ChestInventory extends AbstractInventory {
         String name = itemStackTranslatable.name();
         meta.setDisplayName(FormatTool.formatMessage(name));
         meta.setLore(FormatTool.formatList(itemStackTranslatable.lore()));
+        item.setItemMeta(meta);
+
+        setGlobalItem(index, new InteractableItem(new ItemBuilder(item).secure(), action));
+    }
+
+    public void setGlobalItem(String id, int index, ItemStack item, Consumer<InventoryClickEvent> action, Map<String, String> replacements) {
+        ItemStackTranslatable itemStackTranslatable = getItems().getOrDefault(id, null);
+        if (itemStackTranslatable == null) {
+            return;
+        }
+
+        // Name
+        ItemMeta meta = item.getItemMeta();
+        AtomicReference<String> name = new AtomicReference<>(itemStackTranslatable.name());
+        replacements.forEach((replace, replacement) -> name.set(name.get().replace(replace, replacement)));
+        meta.setDisplayName(FormatTool.formatMessage(name.get()));
+
+        // Lore
+        AtomicReference<List<String>> lore = new AtomicReference<>(itemStackTranslatable.lore());
+        replacements.forEach((replace, replacement) -> {
+            List<String> newLore = new ArrayList<>();
+
+            lore.get().forEach(string -> newLore.add(string.replace(replace, replacement)));
+
+            lore.set(newLore);
+        });
+        meta.setLore(FormatTool.formatList(lore.get()));
         item.setItemMeta(meta);
 
         setGlobalItem(index, new InteractableItem(new ItemBuilder(item).secure(), action));
@@ -231,7 +264,7 @@ public abstract class ChestInventory extends AbstractInventory {
             return;
         }
 
-        inventory = Bukkit.createInventory(new InventoryHolder(getItemsPage(page)), rows * 9, getTitle());
+        inventory = Bukkit.createInventory(new InventoryHolder(getItemsPage(page), clickEventConsumer, dragEventConsumer), rows * 9, getTitle());
         items.getOrDefault(page, new HashMap<>()).forEach((slot, action) -> inventory.setItem(slot, action.itemStack()));
         globalItems.forEach((slot, action) -> inventory.setItem(slot, action.itemStack()));
         inventoriesCache.put(page, inventory);
@@ -264,7 +297,25 @@ public abstract class ChestInventory extends AbstractInventory {
         player.openInventory(inventory);
     }
 
-    public record InventoryHolder(Map<Integer, InteractableItem> slotsActions) implements org.bukkit.inventory.InventoryHolder {
+    public void open(@NotNull Player player, int page) {
+        build(page);
+        player.openInventory(inventory);
+    }
+
+    public int getCurrentPage() {
+        return currentPage;
+    }
+
+    public void setClickEventConsumer(Consumer<InventoryClickEvent> clickEventConsumer) {
+        this.clickEventConsumer = clickEventConsumer;
+    }
+
+    public void setDragEventConsumer(Consumer<InventoryDragEvent> dragEventConsumer) {
+        this.dragEventConsumer = dragEventConsumer;
+    }
+
+    public record InventoryHolder(
+            Map<Integer, InteractableItem> slotsActions, @Nullable Consumer<InventoryClickEvent> clickEventConsumer, @Nullable Consumer<InventoryDragEvent> dragEventConsumer) implements org.bukkit.inventory.InventoryHolder {
 
         @NotNull
         @Override

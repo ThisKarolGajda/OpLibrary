@@ -24,6 +24,18 @@ public class OpTitle {
         this.stay = stay;
     }
 
+    public OpTitle(String title, int fadeIn, int stay, int fadeOut) {
+        this.title = title;
+        this.fadeIn = fadeIn;
+        this.fadeOut = fadeOut;
+        this.stay = stay;
+    }
+
+    public OpTitle(String title, int stay) {
+        this.title = title;
+        this.stay = stay;
+    }
+
     public OpTitle() {
 
     }

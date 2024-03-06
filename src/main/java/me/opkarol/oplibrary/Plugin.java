@@ -4,7 +4,8 @@ import me.opkarol.oplibrary.autostart.OpAutoDisable;
 import me.opkarol.oplibrary.commands.CommandRegister;
 import me.opkarol.oplibrary.configurationfile.ConfigurationFile;
 import me.opkarol.oplibrary.inventories.InventoryListener;
-import me.opkarol.oplibrary.translations.TranslationManager;
+import me.opkarol.oplibrary.runnable.OpRunnable;
+import me.opkarol.oplibrary.translations.Messages;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,7 +14,7 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     private static Plugin instance;
     private final DependencyManager dependencyManager = new DependencyManager();
     private final CommandRegister commandRegister = new CommandRegister();
-    private final TranslationManager messagesManager = new TranslationManager(this, "messages.yml");
+    private final Messages messages = new Messages(this);
     private final ConfigurationFile inventoriesFile = new ConfigurationFile(this, "inventories.yml");
     private final ConfigurationFile configurationFile = new ConfigurationFile(this, "config.yml");
     private Metrics metrics;
@@ -34,6 +35,10 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         return Plugin.getInstance().getDependencyManager();
     }
 
+    public static <T> T get(Class<T> clazz) {
+        return getDependency().get(clazz);
+    }
+
     public CommandRegister getCommandRegister() {
         return commandRegister;
     }
@@ -42,11 +47,11 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         return inventoriesFile;
     }
 
-    public TranslationManager getMessagesManager() {
-        return messagesManager;
+    public Messages getMessagesManager() {
+        return messages;
     }
 
-    public static TranslationManager getMessages() {
+    public static Messages getMessages() {
         return Plugin.getInstance().getMessagesManager();
     }
 
@@ -59,9 +64,12 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     }
 
     public void onDisable() {
+        disable();
         OpAutoDisable.registerDisable();
         getDependencyManager().dispose();
     }
+
+    public abstract void disable();
 
     public void onEnable() {
         new InventoryListener().runListener();
@@ -70,5 +78,50 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         if (registerBStatsOnStartup() != null) {
             metrics = new Metrics(this, registerBStatsOnStartup());
         }
+        enable();
+    }
+
+    public abstract void enable();
+
+    public <T> void register(Class<T> clazz, T t) {
+        getDependencyManager().register(clazz, t);
+    }
+
+    public <T> void register(T t) {
+        getDependencyManager().register((Class<T> )t.getClass(), t);
+    }
+
+    public void registerCommand(Class<?> clazz) {
+        getCommandRegister().registerClass(clazz);
+    }
+
+    public static void reload() {
+        Plugin.getInstance().getConfigurationFile().reload();
+        Plugin.getInstance().getInventoriesFile().reload();
+        Messages.reload();
+    }
+
+    public static OpRunnable run(Runnable runnable) {
+        return new OpRunnable(runnable).runTask();
+    }
+
+    public static OpRunnable runLater(Runnable runnable, long delay) {
+        return new OpRunnable(runnable).runTaskLater(delay);
+    }
+
+    public static OpRunnable runTimer(Runnable runnable, long delay) {
+        return new OpRunnable(runnable).runTaskTimer(delay);
+    }
+
+    public static OpRunnable runAsync(Runnable runnable) {
+        return new OpRunnable(runnable).runTaskAsynchronously();
+    }
+
+    public static OpRunnable runLaterAsync(Runnable runnable, long delay) {
+        return new OpRunnable(runnable).runTaskLaterAsynchronously(delay);
+    }
+
+    public static OpRunnable runTimerAsync(Runnable runnable, long delay) {
+        return new OpRunnable(runnable).runTaskTimerAsynchronously(delay);
     }
 }

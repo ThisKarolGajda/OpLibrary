@@ -6,6 +6,18 @@ import java.util.function.Consumer;
 @SuppressWarnings("unused")
 public class OpTimerRunnable {
 
+    public OpTimerRunnable() {
+
+    }
+
+    public OpTimerRunnable(Runnable runnable, int times) {
+        run(runnable, times);
+    }
+
+    public OpTimerRunnable(Consumer<OpRunnable> runnableConsumer, int times) {
+        run(runnableConsumer, times);
+    }
+
     public synchronized void runTaskTimesDown(BiConsumer<OpRunnable, Integer> onEachConsumer, Consumer<OpRunnable> onEndConsumer, int times) {
         final int[] i = {times};
         new OpRunnable(r -> {
@@ -14,6 +26,30 @@ public class OpTimerRunnable {
                 r.cancelTask();
             }
             onEachConsumer.accept(r, i[0]);
+            i[0]--;
+        }).runTaskTimer(0, 20);
+    }
+
+    public synchronized void run(Runnable runnable, int times) {
+        final int[] i = {times};
+        new OpRunnable(r -> {
+            if (i[0] < 1) {
+                r.cancelTask();
+            }
+
+            runnable.run();
+            i[0]--;
+        }).runTaskTimer(0, 20);
+    }
+
+    public synchronized void run(Consumer<OpRunnable> runnableConsumer, int times) {
+        final int[] i = {times};
+        new OpRunnable(r -> {
+            if (i[0] < 1) {
+                r.cancelTask();
+            }
+
+            runnableConsumer.accept(r);
             i[0]--;
         }).runTaskTimer(0, 20);
     }

@@ -4,6 +4,7 @@ import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public interface IConfigurationFileHelper extends IConfigurationFile {
     default Optional<ConfigurationSection> getConfigurationSection(String path) {
@@ -18,5 +19,9 @@ public interface IConfigurationFileHelper extends IConfigurationFile {
     default Optional<Set<String>> getConfigurationSectionKeys(String path) {
         Optional<ConfigurationSection> optional = getConfigurationSection(path);
         return optional.map(section -> section.getKeys(false));
+    }
+
+    default void forEachKey(String path, Consumer<String> keyConsumer) {
+        getConfigurationSectionKeys(path).ifPresent(keys -> keys.forEach(keyConsumer));
     }
 }

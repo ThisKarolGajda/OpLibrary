@@ -6,7 +6,7 @@
 
     <groupId>me.opkarol</groupId>
     <artifactId>OpLibrary</artifactId>
-    <version>1.7.3-SNAPSHOT</version>
+    <version>1.7.6-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>OpLibrary</name>
@@ -113,7 +113,7 @@
         <dependency>
             <groupId>me.opkarol</groupId>
             <artifactId>OpOrm</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.bstats</groupId>

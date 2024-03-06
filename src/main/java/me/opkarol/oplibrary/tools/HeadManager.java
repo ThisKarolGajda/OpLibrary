@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 public class HeadManager {
@@ -113,6 +114,30 @@ public class HeadManager {
         }).runTaskAsynchronously();
 
         return new ItemBuilder(Material.PLAYER_HEAD);
+    }
+
+    public static @NotNull CompletableFuture<ItemStack> getHeadValueAsync(@NotNull OfflinePlayer player) {
+        UUID uuid = player.getUniqueId();
+
+        if (HEAD_CACHE.containsKey(uuid)) {
+            return CompletableFuture.completedFuture(getHeadValue(HEAD_CACHE.get(uuid)));
+        }
+
+        CompletableFuture<ItemStack> future = new CompletableFuture<>();
+
+        new OpRunnable(() -> {
+            String value = getHeadValueFromRequest(player.getName());
+            if (value == null) {
+                value = "";
+            }
+
+            ItemStack item = getHeadValue(value);
+            HEAD_CACHE.put(uuid, value);
+
+            future.complete(item);
+        }).runTaskAsynchronously();
+
+        return future;
     }
 
     public static Optional<String> getCurrentHeadValue(UUID uuid) {

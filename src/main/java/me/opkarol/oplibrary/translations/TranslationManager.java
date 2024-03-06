@@ -43,7 +43,7 @@ public class TranslationManager {
         }
     }
 
-    private void send(@NotNull String message, Player player) {
+    public void send(@NotNull String message, Player player) {
         String[] split = message.split("\\{NEW}");
         for (String part : split) {
             player.sendMessage(part);

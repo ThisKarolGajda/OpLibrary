@@ -120,6 +120,10 @@ public class ItemBuilder extends ItemStack implements Serializable, Cloneable {
         return this;
     }
 
+    public ItemBuilder setAllFlags() {
+        return setFlags(ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ARMOR_TRIM, ItemFlag.HIDE_DESTROYS, ItemFlag.HIDE_PLACED_ON, ItemFlag.HIDE_POTION_EFFECTS, ItemFlag.HIDE_UNBREAKABLE);
+    }
+
     private void useItemMeta(@NotNull Consumer<ItemMeta> action) {
         checkItemMeta();
         ItemMeta meta = getItemMeta();

@@ -4,13 +4,14 @@ import me.opkarol.oplibrary.database.manager.IDatabase;
 import me.opkarol.oporm.DatabaseEntity;
 import org.bukkit.plugin.Plugin;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FlatDatabase<T extends DatabaseEntity> implements IDatabase<T> {
-    private final FlatDatabaseHelper<Map<Integer, T>> helper;
-    private Map<Integer, T> cache = new HashMap<>();
+public class FlatDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> implements IDatabase<PK, T> {
+    private final FlatDatabaseHelper<Map<PK, T>> helper;
+    private Map<PK, T> cache = new HashMap<>();
 
     public FlatDatabase(Plugin plugin, String fileName) {
         this.helper = new FlatDatabaseHelper<>(plugin, fileName);
@@ -31,12 +32,12 @@ public class FlatDatabase<T extends DatabaseEntity> implements IDatabase<T> {
     }
 
     @Override
-    public T getById(int id) {
+    public T getById(PK id) {
         return cache.get(id);
     }
 
     @Override
-    public void delete(int id) {
+    public void delete(PK id) {
         cache.remove(id);
         helper.saveObject(cache);
     }

@@ -9,6 +9,7 @@ import org.bukkit.boss.BossBar;
 import org.bukkit.entity.Player;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -77,6 +78,10 @@ public class OpBossBar implements Serializable {
         return this;
     }
 
+    /**
+     * @deprecated OpBossBar#displayAndRemoveAfter
+     */
+    @Deprecated
     public OpBossBar displayAndRemove(Player player, int ticks) {
         if (bossBar == null) {
             build();
@@ -85,11 +90,28 @@ public class OpBossBar implements Serializable {
         bossBar.addPlayer(player);
         bossBar.setVisible(true);
         new OpRunnable(() -> {
-           bossBar.removePlayer(player);
-           bossBar.setVisible(false);
+            bossBar.removePlayer(player);
+            if (bossBar.isVisible()) {
+                bossBar.setVisible(false);
+            }
         }).runTaskLaterAsynchronously(ticks);
 
         return this;
+    }
+
+    public void displayAndRemoveAfter(List<? extends Player> playerList, int ticks) {
+        if (bossBar == null) {
+            build();
+        }
+
+        playerList.forEach(player -> bossBar.addPlayer(player));
+        bossBar.setVisible(true);
+
+        new OpRunnable(() -> {
+            bossBar.setVisible(false);
+            bossBar.removeAll();
+        }).runTaskLaterAsynchronously(ticks);
+
     }
 
     public OpBossBar loopAndDisplay(int time, int speed, Consumer<OpBossBar> onEndConsumer) {
@@ -109,6 +131,12 @@ public class OpBossBar implements Serializable {
     }
 
     public OpBossBar setProgress(double v) {
+        if (v < 0) {
+            v = 0;
+        } else if (v > 1) {
+            v = 1;
+        }
+
         bossBar.setProgress(v);
         return this;
     }

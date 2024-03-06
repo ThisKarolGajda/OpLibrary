@@ -13,7 +13,6 @@ public class OpRunnable implements Serializable {
     private int taskId;
     private final BukkitRunnable bukkitRunnable;
 
-
     public OpRunnable(Consumer<OpRunnable> consumer) {
         bukkitRunnable = new BukkitRunnable() {
             @Override

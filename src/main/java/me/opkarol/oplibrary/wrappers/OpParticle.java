@@ -149,6 +149,7 @@ public class OpParticle {
         if (location != null) {
             players.forEach(player -> player.spawnParticle(particle, location.getX(), location.getY(), location.getZ(), amount, offsetX, offsetY, offsetZ, specialData));
         }
+
         return this;
     }
 
@@ -156,9 +157,11 @@ public class OpParticle {
         if (player == null) {
             return this;
         }
+
         if (location != null && particle != null) {
             player.spawnParticle(particle, location.getX(), location.getY(), location.getZ(), amount, offsetX, offsetY, offsetZ);
         }
+
         return this;
     }
 

@@ -1,11 +1,9 @@
 package me.opkarol.oplibrary.commands;
 
-import me.opkarol.oplibrary.Plugin;
 import me.opkarol.oplibrary.commands.annotations.Default;
 import me.opkarol.oplibrary.commands.annotations.Permission;
 import me.opkarol.oplibrary.commands.annotations.Subcommand;
 import me.opkarol.oplibrary.commands.annotations.Cooldown;
-import me.opkarol.oplibrary.translations.TranslationManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandMap;
@@ -20,6 +18,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
+
+import static me.opkarol.oplibrary.translations.Messages.sendMessage;
 
 public class Command extends BukkitCommand {
     private final Object classObject;
@@ -83,17 +83,15 @@ public class Command extends BukkitCommand {
             return false;
         }
 
-        TranslationManager messages = Plugin.getInstance().getMessagesManager();
-
         // Check permission for the entire command class
         Permission classPermission = classObject.getClass().getAnnotation(Permission.class);
         if (!hasPermission(player, classPermission)) {
-            messages.sendMessage("commands.no_permission", player);
+            sendMessage("commands.no_permission", player);
             return false;
         }
 
         if (args.length == 0 && commandMethod != null) {
-            return executeMethod(player, messages, commandMethod);
+            return executeMethod(player, commandMethod);
         }
 
         for (Map.Entry<String, Method> entry : subCommands.entrySet()) {
@@ -105,10 +103,10 @@ public class Command extends BukkitCommand {
             if (subcommandAnnotation != null && args.length > 0 && split[0].equalsIgnoreCase(args[0])) {
                 if (split.length == 1 || sameArgs(split, args)) {
                     if (subcommandMethod.getParameterCount() == 2) {
-                        return executeMethodWithDynamicParameters(player, messages, subcommandMethod, args);
+                        return executeMethodWithDynamicParameters(player, subcommandMethod, args);
                     }
 
-                    return executeMethod(player, messages, subcommandMethod);
+                    return executeMethod(player, subcommandMethod);
                 }
             }
         }
@@ -131,16 +129,16 @@ public class Command extends BukkitCommand {
         return true;
     }
 
-    private boolean executeMethodWithDynamicParameters(Player player, TranslationManager messages, @NotNull Method method, String[] args) {
+    private boolean executeMethodWithDynamicParameters(Player player, @NotNull Method method, String[] args) {
         Permission subcommandPermission = method.getAnnotation(Permission.class);
         if (subcommandPermission != null && !hasPermission(player, subcommandPermission)) {
-            messages.sendMessage("commands.no_permission", player);
+            sendMessage("commands.no_permission", player);
             return true;
         }
 
         // Check cooldown for the subcommand
         if (!checkAndUseCooldown(player, method)) {
-            messages.sendMessage("commands.on_cooldown", player);
+            sendMessage("commands.on_cooldown", player);
             return true;
         }
 
@@ -170,16 +168,16 @@ public class Command extends BukkitCommand {
     }
 
 
-    private boolean executeMethod(Player player, TranslationManager messages, @NotNull Method method) {
+    private boolean executeMethod(Player player, @NotNull Method method) {
         Permission subcommandPermission = method.getAnnotation(Permission.class);
         if (subcommandPermission != null && !hasPermission(player, subcommandPermission)) {
-            messages.sendMessage("commands.no_permission", player);
+            sendMessage("commands.no_permission", player);
             return true;
         }
 
         // Check cooldown for the subcommand
         if (!checkAndUseCooldown(player, method)) {
-            messages.sendMessage("commands.on_cooldown", player);
+            sendMessage("commands.on_cooldown", player);
             return true;
         }
 
