@@ -34,7 +34,7 @@ public class StringUtil {
     public static float getFloatFromString(String s) {
         if (s != null) {
             return Optional.of(s.replaceAll("\\s+", "")
-                            .replaceAll("[^-.,0-9]", ""))
+                            .replaceAll("[^-.e,0-9]", ""))
                     .filter(s1 -> s1.length() > 0)
                     .map(Float::parseFloat).orElse(-1F);
         }
