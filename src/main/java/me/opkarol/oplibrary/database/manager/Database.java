@@ -1,7 +1,6 @@
 package me.opkarol.oplibrary.database.manager;
 
 import me.opkarol.oplibrary.Plugin;
-import me.opkarol.oporm.DatabaseEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,10 +10,10 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public class DatabaseDTO<PK extends Serializable, T extends DatabaseEntity<PK>> {
+public class Database<PK extends Serializable, T extends me.opkarol.oporm.DatabaseEntity<PK>> {
     private final DatabaseImpl<PK, T> databaseHandler;
 
-    public DatabaseDTO(Class<T> clazz) {
+    public Database(Class<T> clazz) {
         this.databaseHandler = Plugin.Database.getFactory(clazz);
     }
 
