@@ -40,8 +40,9 @@ public class OpActionBar implements Serializable {
 
     public OpActionBar send(Player player, OpComponent component) {
         if (actionBar == null) {
-            return this;
+            build();
         }
+
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, component.build());
         return this;
     }

@@ -12,8 +12,15 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.function.Supplier;
 
-public class DatabaseFactory<PK extends Serializable, T extends DatabaseEntity<PK>> extends DatabaseImpl<PK, T> {
+public final class DatabaseFactory<PK extends Serializable, T extends DatabaseEntity<PK>> extends DatabaseImpl<PK, T> {
 
+    /**
+     * Objects:
+     * SQL: url, host, password, class,
+     * FLAT: plugin, fileName
+     *
+     * @param settings Database settings
+     */
     public DatabaseFactory(@NotNull DatabaseSettings settings) {
         super(settings.type() == DatabaseSettings.Type.SQL
                 ? new SqlDatabase<>(settings.objects().get("url").toString(), settings.objects().get("host").toString(), settings.objects().get("password").toString(), (Class<T>) settings.objects().get("class"))
@@ -29,10 +36,11 @@ public class DatabaseFactory<PK extends Serializable, T extends DatabaseEntity<P
     }
 
     @Contract("_, _ -> new")
-    public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseImpl<PK, T> createBasedOnSupplier(@NotNull Supplier<Boolean> flatDatabaseSupplier, Map<String, Object> settingsObjects) {
-        if (flatDatabaseSupplier.get()) {
+    public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseImpl<PK, T> createBasedOnSupplier(@NotNull Supplier<Boolean> isFlatDatabase, Map<String, Object> settingsObjects) {
+        if (isFlatDatabase.get()) {
             return new DatabaseFactory<>(new DatabaseSettings(DatabaseSettings.Type.FLAT, settingsObjects));
         }
+
         return new DatabaseFactory<>(new DatabaseSettings(DatabaseSettings.Type.SQL, settingsObjects));
     }
 }

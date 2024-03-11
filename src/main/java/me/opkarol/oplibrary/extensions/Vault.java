@@ -70,4 +70,11 @@ public class Vault {
         PLUGIN_NOT_ENABLED, WITHDRAW_SUCCESSFUL, WITHDRAW_NOT_SUCCESSFUL, WITHDRAW_TOO_BROKE, DEPOSIT_SUCCESSFUL, DEPOSIT_NOT_SUCCESSFUL
     }
 
+    public static VAULT_RETURN_INFO remove(OfflinePlayer player, double amount) {
+        return getInstance().withdraw(player, amount);
+    }
+
+    public static VAULT_RETURN_INFO add(OfflinePlayer player, double amount) {
+        return getInstance().deposit(player, amount);
+    }
 }

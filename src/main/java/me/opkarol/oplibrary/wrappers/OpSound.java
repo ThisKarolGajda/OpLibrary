@@ -57,6 +57,7 @@ public class OpSound {
 
     public OpSound play(OpSerializableLocation location) {
         if (receivers == null) {
+            Bukkit.getOnlinePlayers().forEach(player -> play(player, location.getLocation()));
             return this;
         }
 

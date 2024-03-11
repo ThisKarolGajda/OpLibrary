@@ -235,7 +235,14 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void fillEmptyWithBlank() {
-        fillEmptyWithBlank(currentPage);
+        fillEmptyWithBlank(0);
+        for (int i = 0; i < Integer.MAX_VALUE; i++) {
+            if (!hasPageAnyItems(i)) {
+                break;
+            }
+
+            fillEmptyWithBlank(i);
+        }
     }
 
     public void fillEmptyWithBlank(int page) {
@@ -276,7 +283,15 @@ public abstract class ChestInventory extends AbstractInventory {
         return page;
     }
 
+    private boolean hasPageAnyItems(int page) {
+        return items.containsKey(page) && !items.get(page).isEmpty();
+    }
+
     public void nextPage() {
+        if (!hasPageAnyItems(currentPage + 1)) {
+            return;
+        }
+
         currentPage++;
     }
 

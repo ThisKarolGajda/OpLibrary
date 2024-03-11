@@ -3,11 +3,33 @@ package me.opkarol.oplibrary;
 import me.opkarol.oplibrary.autostart.OpAutoDisable;
 import me.opkarol.oplibrary.commands.CommandRegister;
 import me.opkarol.oplibrary.configurationfile.ConfigurationFile;
+import me.opkarol.oplibrary.database.manager.DatabaseImpl;
+import me.opkarol.oplibrary.database.manager.settings.DatabaseFactory;
 import me.opkarol.oplibrary.inventories.InventoryListener;
+import me.opkarol.oplibrary.inventories.ItemBuilder;
 import me.opkarol.oplibrary.runnable.OpRunnable;
+import me.opkarol.oplibrary.runnable.OpTimerRunnable;
+import me.opkarol.oplibrary.tools.FormatTool;
+import me.opkarol.oplibrary.tools.Heads;
+import me.opkarol.oplibrary.tools.MathUtils;
 import me.opkarol.oplibrary.translations.Messages;
+import me.opkarol.oplibrary.wrappers.*;
+import me.opkarol.oporm.DatabaseEntity;
 import org.bstats.bukkit.Metrics;
+import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.block.Block;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public abstract class Plugin extends JavaPlugin implements PluginSettings {
@@ -88,7 +110,7 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     }
 
     public <T> void register(T t) {
-        getDependencyManager().register((Class<T> )t.getClass(), t);
+        getDependencyManager().register((Class<T>) t.getClass(), t);
     }
 
     public void registerCommand(Class<?> clazz) {
@@ -101,27 +123,291 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         Messages.reload();
     }
 
-    public static OpRunnable run(Runnable runnable) {
-        return new OpRunnable(runnable).runTask();
+    public static @NotNull String format(String message) {
+        return FormatTool.formatMessage(message);
     }
 
-    public static OpRunnable runLater(Runnable runnable, long delay) {
-        return new OpRunnable(runnable).runTaskLater(delay);
+    public static @NotNull List<String> format(List<String> list) {
+        return FormatTool.formatList(list);
     }
 
-    public static OpRunnable runTimer(Runnable runnable, long delay) {
-        return new OpRunnable(runnable).runTaskTimer(delay);
+    public static Object formatToObject(Object object) {
+        if (object == null) {
+            return null;
+        }
+
+        if (object instanceof String string) {
+            return FormatTool.formatMessage(string);
+        }
+
+        if (object instanceof List<?> list) {
+            if (list.stream().allMatch(obj -> obj instanceof String s)) {
+                return FormatTool.formatList((List<String>) object);
+            }
+        }
+
+        return null;
     }
 
-    public static OpRunnable runAsync(Runnable runnable) {
-        return new OpRunnable(runnable).runTaskAsynchronously();
+    public static String formatToString(Object object) {
+        if (object == null) {
+            return null;
+        }
+
+        if (object instanceof String string) {
+            return FormatTool.formatMessage(string);
+        }
+
+        if (object instanceof List<?> list) {
+            if (list.stream().allMatch(obj -> obj instanceof String s)) {
+                return String.join("\n", FormatTool.formatList((List<String>) object));
+            }
+        }
+
+        return null;
     }
 
-    public static OpRunnable runLaterAsync(Runnable runnable, long delay) {
-        return new OpRunnable(runnable).runTaskLaterAsynchronously(delay);
+    public static int getRandom(int min, int max) {
+        return MathUtils.getRandomInt(min, max);
     }
 
-    public static OpRunnable runTimerAsync(Runnable runnable, long delay) {
-        return new OpRunnable(runnable).runTaskTimerAsynchronously(delay);
+    public ItemBuilder head(String texture) {
+        return Heads.get(texture);
+    }
+
+    public ItemBuilder head(OfflinePlayer player) {
+        return Heads.get(player);
+    }
+
+    public static class Timer {
+        public static @NotNull OpRunnable run(Runnable runnable) {
+            return new OpRunnable(runnable).runTask();
+        }
+
+        public static @NotNull OpRunnable runLater(Runnable runnable, long delay) {
+            return new OpRunnable(runnable).runTaskLater(delay);
+        }
+
+        public static @NotNull OpRunnable runTimer(Runnable runnable, long delay) {
+            return new OpRunnable(runnable).runTaskTimer(delay);
+        }
+
+        public static @NotNull OpRunnable runAsync(Runnable runnable) {
+            return new OpRunnable(runnable).runTaskAsynchronously();
+        }
+
+        public static @NotNull OpRunnable runLaterAsync(Runnable runnable, long delay) {
+            return new OpRunnable(runnable).runTaskLaterAsynchronously(delay);
+        }
+
+        public static @NotNull OpRunnable runTimerAsync(Runnable runnable, long delay) {
+            return new OpRunnable(runnable).runTaskTimerAsynchronously(delay);
+        }
+
+        public static void runTimes(Runnable runnable, int times) {
+            new OpTimerRunnable().run(runnable, times);
+        }
+
+        public static void runTimes(Consumer<OpRunnable> consumer, int times) {
+            new OpTimerRunnable().run(consumer, times);
+        }
+    }
+
+    public static class Effects {
+        public static void actionBar(Player player, String text) {
+            new OpActionBar(text)
+                    .send(player);
+        }
+
+        public static void actionBar(Player player, String text, int times) {
+            new OpActionBar(text)
+                    .sendLooped(times)
+                    .addReceiver(player);
+        }
+
+        public static void actionBar(Player player, String text, List<Player> players) {
+            new OpActionBar(text)
+                    .setReceivers(players)
+                    .send();
+        }
+
+        public static void actionBar(Player player, String text, List<Player> players, int times) {
+            new OpActionBar(text)
+                    .setReceivers(players)
+                    .sendLooped(times);
+        }
+
+        public static void actionBar(Player player, @NotNull OpActionBar actionBar) {
+            actionBar.send(player);
+        }
+
+        public static void actionBar(Player player, @NotNull OpActionBar actionBar, int times) {
+            actionBar.sendLooped(times)
+                    .addReceiver(player);
+        }
+
+        public static void actionBar(Player player, @NotNull OpActionBar actionBar, List<Player> players) {
+            actionBar.setReceivers(players)
+                    .send();
+        }
+
+        public static void actionBar(Player player, @NotNull OpActionBar actionBar, List<Player> players, int times) {
+            actionBar.setReceivers(players)
+                    .sendLooped(times);
+        }
+
+        public static void highlightBlock(Player player, Block block, Particle particle) {
+            new OpBlockHighlighter(block, particle)
+                    .highlightFor(player);
+        }
+
+        public static void highlightBlock(Player player, Location location, Particle particle) {
+            new OpBlockHighlighter(location, particle)
+                    .highlightFor(player);
+        }
+
+        public static void bossBar(Player player, BarStyle style, BarColor color) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .display(player);
+        }
+
+        public static void bossBar(Player player, BarStyle style, BarColor color, String title) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .setTitle(title)
+                    .display(player);
+        }
+
+        public static void bossBar(Player player, BarStyle style, BarColor color, String title, int ticks) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .setTitle(title)
+                    .displayAndRemoveAfter(List.of(player), ticks);
+        }
+
+        public static void bossBar(List<Player> players, BarStyle style, BarColor color, String title, int ticks) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .setTitle(title)
+                    .displayAndRemoveAfter(players, ticks);
+        }
+
+        public static void bossBar(List<Player> players, BarStyle style, BarColor color, String title) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .setTitle(title)
+                    .display(players);
+        }
+
+        public static void bossBar(List<Player> players, BarStyle style, BarColor color) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .display(players);
+        }
+
+        public static void bossBar(List<Player> players, BarStyle style, BarColor color, int ticks) {
+            new OpBossBar()
+                    .setBarStyle(style)
+                    .setBarColor(color)
+                    .displayAndRemoveAfter(players, ticks);
+        }
+
+        public static void particle(Player player, Particle particle, Location location) {
+            new OpParticle(particle)
+                    .setLocation(location)
+                    .display(player);
+        }
+
+        public static void particle(Player player, Particle particle, Location location, int amount) {
+            new OpParticle(particle)
+                    .setLocation(location)
+                    .setAmount(amount)
+                    .display(player);
+        }
+
+        public static void particle(Player player, Particle particle, Location location, int amount, float offsetX, float offsetY, float offsetZ) {
+            new OpParticle(particle)
+                    .setLocation(location)
+                    .setAmount(amount)
+                    .setOffsetX(offsetX)
+                    .setOffsetY(offsetY)
+                    .setOffsetZ(offsetZ)
+                    .display(player);
+        }
+
+        public static void particle(Player player, @NotNull OpParticle particle, int amount) {
+            particle.setAmount(amount)
+                    .display(player);
+        }
+
+        public static void sound(Player player, Sound sound) {
+            new OpSound(sound)
+                    .play(player);
+        }
+
+        public static void sound(Player player, Sound sound, float volume, float pitch) {
+            new OpSound(sound)
+                    .setVolume(volume)
+                    .setPitch(pitch)
+                    .play(player);
+        }
+
+
+        public static void sound(Location location, Sound sound) {
+            new OpSound(sound)
+                    .play(location);
+        }
+
+        public static void title(Player player, String title) {
+            new OpTitle()
+                    .setTitle(title)
+                    .display(player);
+        }
+
+        public static void title(Player player, String title, String subTitle) {
+            new OpTitle()
+                    .setTitle(title)
+                    .setSubtitle(subTitle)
+                    .display(player);
+        }
+
+        public static void title(Player player, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+            new OpTitle()
+                    .setTitle(title)
+                    .setSubtitle(subTitle)
+                    .setFadeIn(fadeIn)
+                    .setStay(stay)
+                    .setFadeOut(fadeOut)
+                    .display(player);
+        }
+
+        public static void title(List<Player> players, String title, String subTitle, int fadeIn, int stay, int fadeOut) {
+            new OpTitle()
+                    .setTitle(title)
+                    .setSubtitle(subTitle)
+                    .setFadeIn(fadeIn)
+                    .setStay(stay)
+                    .setFadeOut(fadeOut)
+                    .setReceivers(players)
+                    .display();
+        }
+    }
+
+    public static class Database {
+        public static <PK extends Serializable, T extends DatabaseEntity<PK>> DatabaseImpl<PK, T> getFactory(Class<T> clazz) {
+            ConfigurationFile config = Plugin.getInstance().getConfigurationFile();
+            if (config.get("databaseType").equals("MYSQL")) {
+                return DatabaseFactory.createSql("jdbc:mysql://" + config.getFileConfiguration().getString("connectionSettings.host") + ":" + config.getFileConfiguration().getString("connectionSettings.port") + "/" + config.getFileConfiguration().getString("connectionSettings.database") + "?autoReconnect=true", config.getFileConfiguration().getString("connectionSettings.username"), config.getFileConfiguration().getString("connectionSettings.password"), clazz);
+            } else {
+                return DatabaseFactory.createFlat(Plugin.getInstance(), "database-save.db");
+            }
+        }
     }
 }

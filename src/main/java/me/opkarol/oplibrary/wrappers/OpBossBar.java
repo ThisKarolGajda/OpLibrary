@@ -67,6 +67,11 @@ public class OpBossBar implements Serializable {
         return this;
     }
 
+    public OpBossBar display(List<Player> players) {
+        players.forEach(this::display);
+        return this;
+    }
+
     public OpBossBar display(Player player) {
         bossBar.addPlayer(player);
         setVisible(true);

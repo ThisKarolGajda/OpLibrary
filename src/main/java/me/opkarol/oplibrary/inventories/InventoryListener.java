@@ -15,14 +15,20 @@ public class InventoryListener extends BasicListener {
 
     @EventHandler
     public void onInventoryClick(@NotNull InventoryClickEvent event) {
-        if (!(event.getWhoClicked().getOpenInventory().getTopInventory().getHolder() instanceof ChestInventory.InventoryHolder holder)) {
+        if (event.getClickedInventory() == null || !(event.getWhoClicked().getOpenInventory().getTopInventory().getHolder() instanceof ChestInventory.InventoryHolder holder)) {
             return;
         }
 
         if (holder.clickEventConsumer() != null && Objects.equals(event.getClickedInventory(), event.getWhoClicked().getInventory())) {
             holder.clickEventConsumer().accept(event);
         } else {
-            if (event.getClickedInventory() == null || !(event.getClickedInventory().getHolder() instanceof ChestInventory.InventoryHolder)) {
+            if (!(event.getClickedInventory().getHolder() instanceof ChestInventory.InventoryHolder)) {
+                if (event.getClick().isShiftClick() || event.getClick() == ClickType.DOUBLE_CLICK || event.getClick() == ClickType.DROP || event.getClick() == ClickType.CREATIVE || event.getClick().isCreativeAction()) {
+                    event.setCancelled(true);
+                    event.setResult(Event.Result.DENY);
+                    return;
+                }
+
                 return;
             }
 
