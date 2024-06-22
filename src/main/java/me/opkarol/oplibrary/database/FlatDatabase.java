@@ -1,6 +1,6 @@
-package me.opkarol.oplibrary.database.flat;
+package me.opkarol.oplibrary.database;
 
-import me.opkarol.oplibrary.database.manager.IDatabase;
+import me.opkarol.oplibrary.database.manager.AbstractDatabase;
 import me.opkarol.oporm.DatabaseEntity;
 import org.bukkit.plugin.Plugin;
 
@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FlatDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> implements IDatabase<PK, T> {
+public class FlatDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> extends AbstractDatabase<PK, T> {
     private final FlatDatabaseHelper<Map<PK, T>> helper;
     private Map<PK, T> cache = new HashMap<>();
 
@@ -45,5 +45,10 @@ public class FlatDatabase<PK extends Serializable, T extends DatabaseEntity<PK>>
     @Override
     public List<T> getAll() {
         return cache.values().stream().toList();
+    }
+
+    @Override
+    public void onDisable() {
+
     }
 }

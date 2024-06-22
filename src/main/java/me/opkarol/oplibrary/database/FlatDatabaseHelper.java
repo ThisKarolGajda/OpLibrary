@@ -1,4 +1,4 @@
-package me.opkarol.oplibrary.database.flat;
+package me.opkarol.oplibrary.database;
 
 import me.opkarol.oplibrary.configurationfile.ConfigurationFile;
 import org.bukkit.plugin.Plugin;

@@ -24,13 +24,12 @@ public class OpBlockHighlighter {
         this.particle = particle;
     }
 
-
     public void highlightFor(Player player) {
         if (block.isEmpty()) {
             return;
         }
 
-        List<Location> locations = getHollowCubeLocations(block.getLocation(), 0.25);
+        List<Location> locations = getHollowCubeLocations(block.getLocation());
         for (Location location : locations) {
             new OpParticle(particle).setLocation(location).display(player);
         }
@@ -47,7 +46,7 @@ public class OpBlockHighlighter {
         }, seconds);
     }
 
-    private static @NotNull List<Location> getHollowCubeLocations(@NotNull Location location, double particleDistance) {
+    private static @NotNull List<Location> getHollowCubeLocations(@NotNull Location location) {
         List<Location> result = new ArrayList<>();
         World world = location.getWorld();
         double minX = location.getBlockX();
@@ -56,6 +55,7 @@ public class OpBlockHighlighter {
         double maxX = location.getBlockX() + 1;
         double maxY = location.getBlockY() + 1;
         double maxZ = location.getBlockZ() + 1;
+        double particleDistance = 0.25;
 
         for (double x = minX; x <= maxX; x = Math.round((x + particleDistance) * 1e2) / 1e2) {
             for (double y = minY; y <= maxY; y = Math.round((y + particleDistance) * 1e2) / 1e2) {

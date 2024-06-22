@@ -3,6 +3,7 @@ package me.opkarol.oplibrary.wrappers;
 import me.opkarol.oplibrary.location.OpSerializableLocation;
 import me.opkarol.oplibrary.location.StringUtil;
 import me.opkarol.oplibrary.runnable.OpRunnable;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.entity.Entity;
@@ -163,6 +164,11 @@ public class OpParticle {
         }
 
         return this;
+    }
+
+    public OpParticle displayForAllOnline() {
+        setReceivers(new ArrayList<>(Bukkit.getOnlinePlayers()));
+        return display();
     }
 
     public OpParticle display(List<Player> players) {

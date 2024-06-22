@@ -5,10 +5,10 @@ import me.opkarol.oporm.DatabaseEntity;
 import java.io.Serializable;
 import java.util.List;
 
-public class DatabaseImpl<PK extends Serializable, T extends DatabaseEntity<PK>> {
-    private final IDatabase<PK, T> database;
+public class DatabaseHolder<PK extends Serializable, T extends DatabaseEntity<PK>> {
+    private final AbstractDatabase<PK, T> database;
 
-    public DatabaseImpl(IDatabase<PK, T> database) {
+    public DatabaseHolder(AbstractDatabase<PK, T> database) {
         this.database = database;
         initialize();
     }

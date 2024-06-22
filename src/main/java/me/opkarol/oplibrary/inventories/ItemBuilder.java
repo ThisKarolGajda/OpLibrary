@@ -172,6 +172,18 @@ public class ItemBuilder extends ItemStack implements Serializable, Cloneable {
         return getItemMeta().getLore();
     }
 
+    public ItemBuilder glow(boolean glow) {
+        if (glow) {
+            if (getEnchantments() != null && getEnchantments().size() == 0) {
+                setEnchants(Map.of(Enchantment.LURE, 1));
+            }
+
+            setAllFlags();
+        }
+
+        return this;
+    }
+
     public Map<String, String> getTempReplacements() {
         return tempReplacements;
     }

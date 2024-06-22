@@ -12,31 +12,47 @@ public class StringUtil {
 
     public static int getIntFromString(String s) {
         if (s != null) {
-            return Optional.of(s.replaceAll("\\s+", "")
-                            .replaceAll("[^-0-9]", ""))
-                    .filter(s1 -> s1.length() > 0)
-                    .map(Integer::parseInt)
-                    .orElse(-1);
+            try {
+                return Optional.of(s.replaceAll("\\s+", "")
+                                .replaceAll("[^-0-9]", ""))
+                        .filter(s1 -> s1.length() > 0)
+                        .map(Integer::parseInt)
+                        .orElse(-1);
+            } catch (NumberFormatException ignore) {
+                return -1;
+            }
         }
         return -1;
     }
 
     public static double getDoubleFromString(String s) {
         if (s != null) {
-            return Optional.of(s.replaceAll("\\s+", "")
-                            .replaceAll("[^-.,0-9]", ""))
-                    .filter(s1 -> s1.length() > 0)
-                    .map(Double::parseDouble).orElse(-1D);
+            try {
+                return Optional.of(s.replaceAll("\\s+", "")
+                                .replaceAll("[^-.,0-9]", ""))
+                        .filter(s1 -> s1.length() > 0)
+                        .map(Double::parseDouble).orElse(-1D);
+            } catch (NumberFormatException ignore) {
+                return -1D;
+            }
         }
         return -1D;
     }
 
     public static float getFloatFromString(String s) {
         if (s != null) {
-            return Optional.of(s.replaceAll("\\s+", "")
-                            .replaceAll("[^-.e,0-9]", ""))
-                    .filter(s1 -> s1.length() > 0)
-                    .map(Float::parseFloat).orElse(-1F);
+            try {
+                if (!s.startsWith("-") && s.contains("-")) {
+                    s = s.replace("-", "e-");
+                }
+
+                return Optional.of(s.replaceAll("\\s+", "")
+                                .replaceAll("[^-.e,0-9]", ""))
+                        .filter(s1 -> s1.length() > 0)
+                        .map(Float::parseFloat).orElse(-1F);
+            } catch (NumberFormatException ignore) {
+                return -1F;
+            }
         }
         return -1F;
     }

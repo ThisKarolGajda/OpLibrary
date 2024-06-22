@@ -24,7 +24,9 @@ public class OpTimerRunnable {
             if (i[0] < 1) {
                 onEndConsumer.accept(r);
                 r.cancelTask();
+                return;
             }
+
             onEachConsumer.accept(r, i[0]);
             i[0]--;
         }).runTaskTimer(0, 20);
@@ -35,6 +37,7 @@ public class OpTimerRunnable {
         new OpRunnable(r -> {
             if (i[0] < 1) {
                 r.cancelTask();
+                return;
             }
 
             runnable.run();
@@ -47,6 +50,7 @@ public class OpTimerRunnable {
         new OpRunnable(r -> {
             if (i[0] < 1) {
                 r.cancelTask();
+                return;
             }
 
             runnableConsumer.accept(r);
@@ -60,7 +64,9 @@ public class OpTimerRunnable {
             if (i[0] >= times) {
                 onEndConsumer.accept(r);
                 r.cancelTask();
+                return;
             }
+
             onEachConsumer.accept(r, i[0]);
             i[0]++;
         }).runTaskTimer(0, 20);
@@ -72,7 +78,9 @@ public class OpTimerRunnable {
             if (i[0] < 1) {
                 onEndConsumer.accept(r);
                 r.cancelTask();
+                return;
             }
+
             onEachConsumer.accept(r, i[0]);
             i[0]--;
         }).runTaskTimerAsynchronously(0, 20);
@@ -83,7 +91,9 @@ public class OpTimerRunnable {
         return new OpRunnable(r -> {
             if (i[0] < 1) {
                 r.cancelTask();
+                return;
             }
+
             onEachConsumer.accept(r, i[0]);
             i[0]--;
         }).runTaskTimerAsynchronously(0, 20);
@@ -95,7 +105,9 @@ public class OpTimerRunnable {
             if (i[0] > times) {
                 onEndConsumer.accept(r);
                 r.cancelTask();
+                return;
             }
+
             onEachConsumer.accept(r, i[0]);
             i[0]++;
         }).runTaskTimerAsynchronously(0, 20);
@@ -106,9 +118,37 @@ public class OpTimerRunnable {
         new OpRunnable(r -> {
             if (i[0] > times) {
                 r.cancelTask();
+                return;
             }
+
             onEachConsumer.accept(r, i[0]);
             i[0]++;
         }).runTaskTimerAsynchronously(0, 20);
+    }
+
+    public void run(Runnable runnable, int times, int delay) {
+        final int[] i = {times};
+        new OpRunnable(r -> {
+            if (i[0] < 1) {
+                r.cancelTask();
+                return;
+            }
+
+            runnable.run();
+            i[0]--;
+        }).runTaskTimer(0, delay);
+    }
+
+    public void run(Consumer<OpRunnable> consumer, int times, int delay) {
+        final int[] i = {times};
+        new OpRunnable(r -> {
+            if (i[0] < 1) {
+                r.cancelTask();
+                return;
+            }
+
+            consumer.accept(r);
+            i[0]--;
+        }).runTaskTimer(0, delay);
     }
 }

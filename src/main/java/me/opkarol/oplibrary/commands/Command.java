@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.commands;
 
+import me.opkarol.oplibrary.Plugin;
 import me.opkarol.oplibrary.commands.annotations.Default;
 import me.opkarol.oplibrary.commands.annotations.Permission;
 import me.opkarol.oplibrary.commands.annotations.Subcommand;
@@ -43,7 +44,11 @@ public class Command extends BukkitCommand {
                 .filter(method -> method.isAnnotationPresent(Subcommand.class))
                 .toList()) {
             Subcommand subcommand = method.getAnnotation(Subcommand.class);
-            subCommands.put(subcommand.value(), method);
+            String name = subcommand.value();
+            while (subCommands.containsKey(name)) {
+                name += "_";
+            }
+            subCommands.put(name, method);
         }
     }
 
@@ -54,7 +59,7 @@ public class Command extends BukkitCommand {
             CommandMap commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
             org.bukkit.command.Command command = commandMap.getCommand(this.getName());
             if (command == null || !command.isRegistered()) {
-                commandMap.register(getName(), this);
+                commandMap.register(getName(), Plugin.getInstance().getName(), this);
             } else {
                 throw new IllegalStateException("This command is already registered.");
             }
@@ -94,19 +99,35 @@ public class Command extends BukkitCommand {
             return executeMethod(player, commandMethod);
         }
 
+        if (args.length == 1 && commandMethod != null && (Arrays.equals(commandMethod.getParameterTypes(), new Class[]{Player.class, OfflinePlayer.class}) || Arrays.equals(commandMethod.getParameterTypes(), new Class[]{Player.class, String.class}))) {
+            return executeMethodWithDynamicParameters(player, commandMethod, args, 0);
+        }
+
+        if (args.length > 1 && commandMethod != null && commandMethod.getParameterCount() > 1 && commandMethod.getParameterTypes()[1].equals(String.class)) {
+            String combinedArgs = String.join(" ", args);
+            return executeMethodWithDynamicParameters(player, commandMethod, new String[]{combinedArgs}, 0);
+        }
+
+        if (args.length > 1 && commandMethod != null && commandMethod.getParameterCount() > 2 && commandMethod.getParameterTypes()[1].equals(OfflinePlayer.class) && commandMethod.getParameterTypes()[2].equals(String.class)) {
+            String combinedArgs = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
+            return executeMethodWithDynamicParameters(player, commandMethod, new String[]{args[0], combinedArgs}, 0);
+        }
+
         for (Map.Entry<String, Method> entry : subCommands.entrySet()) {
-            String subcommandName = entry.getKey();
+            String subcommandName = entry.getKey().replace("_", "");
             Method subcommandMethod = entry.getValue();
 
             String[] split = subcommandName.split(" ");
             Subcommand subcommandAnnotation = subcommandMethod.getAnnotation(Subcommand.class);
             if (subcommandAnnotation != null && args.length > 0 && split[0].equalsIgnoreCase(args[0])) {
-                if (split.length == 1 || sameArgs(split, args)) {
-                    if (subcommandMethod.getParameterCount() == 2) {
-                        return executeMethodWithDynamicParameters(player, subcommandMethod, args);
+                if (sameArgs(split, args)) {
+                    if (subcommandMethod.getParameterCount() == 2 && args.length == split.length + 1) {
+                        return executeMethodWithDynamicParameters(player, subcommandMethod, args, split.length);
                     }
 
-                    return executeMethod(player, subcommandMethod);
+                    if (subcommandMethod.getParameterCount() == 1 && args.length == split.length) {
+                        return executeMethod(player, subcommandMethod);
+                    }
                 }
             }
         }
@@ -114,14 +135,13 @@ public class Command extends BukkitCommand {
         return true;
     }
 
-    @Contract(pure = true)
-    private boolean sameArgs(String @NotNull [] args1, String @NotNull [] args2) {
-        if (args2.length < args1.length) {
+    private boolean sameArgs(String @NotNull [] split, String @NotNull [] args) {
+        if (args.length < split.length) {
             return false;
         }
 
-        for (int i = 0; i < args1.length; i++) {
-            if (!args1[i].equals(args2[i])) {
+        for (int i = 0; i < split.length; i++) {
+            if (!split[i].equals(args[i])) {
                 return false;
             }
         }
@@ -129,7 +149,7 @@ public class Command extends BukkitCommand {
         return true;
     }
 
-    private boolean executeMethodWithDynamicParameters(Player player, @NotNull Method method, String[] args) {
+    private boolean executeMethodWithDynamicParameters(Player player, @NotNull Method method, String[] args, int splitLength) {
         Permission subcommandPermission = method.getAnnotation(Permission.class);
         if (subcommandPermission != null && !hasPermission(player, subcommandPermission)) {
             sendMessage("commands.no_permission", player);
@@ -143,11 +163,10 @@ public class Command extends BukkitCommand {
         }
 
         Class<?>[] parameterTypes = method.getParameterTypes();
-
         // Check for method with Player and String parameters
-        if (parameterTypes.length == 2 && parameterTypes[0] == Player.class && parameterTypes[1] == String.class && args.length == 2) {
+        if (parameterTypes.length == 2 && parameterTypes[0] == Player.class && parameterTypes[1] == String.class && args.length > splitLength) {
             try {
-                method.invoke(classObject, player, args[1]);
+                method.invoke(classObject, player, args[splitLength]);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -155,9 +174,18 @@ public class Command extends BukkitCommand {
         }
 
         // Check for method with Player and OfflinePlayer parameters
-        if (parameterTypes.length == 2 && parameterTypes[0] == Player.class && parameterTypes[1] == OfflinePlayer.class && args.length == 2) {
+        if (parameterTypes.length == 2 && parameterTypes[0] == Player.class && parameterTypes[1] == OfflinePlayer.class && args.length > splitLength) {
             try {
-                method.invoke(classObject, player, Bukkit.getOfflinePlayer(args[1]));
+                method.invoke(classObject, player, Bukkit.getOfflinePlayer(args[splitLength]));
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
+            return true;
+        }
+
+        if (parameterTypes.length == 3 && parameterTypes[0] == Player.class && parameterTypes[1] == OfflinePlayer.class && parameterTypes[2] == String.class && args.length > splitLength + 1) {
+            try {
+                method.invoke(classObject, player, Bukkit.getOfflinePlayer(args[splitLength]), args[splitLength + 1]);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -185,7 +213,9 @@ public class Command extends BukkitCommand {
         if (parameterTypes.length == 1 && parameterTypes[0] == Player.class) {
             try {
                 method.invoke(classObject, player);
-            } catch (IllegalAccessException | InvocationTargetException ignore) {}
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                e.printStackTrace();
+            }
             return true;
         }
 
@@ -203,11 +233,43 @@ public class Command extends BukkitCommand {
             return Collections.emptyList();
         }
 
-        return new ArrayList<>(getAllSubcommandsForLength(args, args.length)
+        List<String> suggestions = new ArrayList<>(getAllSubcommandsForLength(args, args.length)
                 .stream()
                 .filter(subCommand -> subCommands.get(subCommand) == null || !subCommands.get(subCommand).isAnnotationPresent(Permission.class) || hasPermission(player, subCommands.get(subCommand).getAnnotation(Permission.class)))
                 .filter(subCommand -> subCommands.get(subCommand) == null || checkCooldown(player, subCommands.get(subCommand)))
                 .toList());
+
+        // Check if the main command method requires an OfflinePlayer parameter
+        if (commandMethod != null && args.length == 1 && commandMethod.getParameterTypes().length == 2 && commandMethod.getParameterTypes()[1] == OfflinePlayer.class) {
+            String lastArg = args[0].toLowerCase();
+            List<String> playerNames = Bukkit.getOnlinePlayers().stream()
+                    .map(Player::getName)
+                    .filter(name -> name.toLowerCase().startsWith(lastArg))
+                    .toList();
+            suggestions.addAll(playerNames);
+        }
+
+        for (Map.Entry<String, Method> entry : subCommands.entrySet()) {
+            String subcommandName = entry.getKey().replace("_", "");
+            Method subcommandMethod = entry.getValue();
+
+            String[] split = subcommandName.split(" ");
+            Subcommand subcommandAnnotation = subcommandMethod.getAnnotation(Subcommand.class);
+            if (subcommandAnnotation != null && args.length > 0 && split[0].equalsIgnoreCase(args[0])) {
+                if (sameArgs(split, args)) {
+                    if (subcommandMethod.getParameterCount() == 2 && subcommandMethod.getParameterTypes()[1].equals(OfflinePlayer.class) && args.length == split.length + 1) {
+                        String lastArg = args[args.length - 1].toLowerCase();
+                        List<String> playerNames = Bukkit.getOnlinePlayers().stream()
+                                .map(Player::getName)
+                                .filter(name -> name.toLowerCase().startsWith(lastArg))
+                                .toList();
+                        suggestions.addAll(playerNames);
+                    }
+                }
+            }
+        }
+
+        return suggestions;
     }
 
     private boolean hasPermission(Player player, me.opkarol.oplibrary.commands.annotations.Permission permission) {
@@ -220,16 +282,16 @@ public class Command extends BukkitCommand {
         if (length == 1) {
             // Return all top-level subcommands that start with the given argument
             matchingSubcommands.addAll(subCommands.keySet().stream()
-                    .map(subcommand -> subcommand.split(" ")[0])
-                    .filter(subcommand -> subcommand.startsWith(args[length - 1]))
+                    .map(subcommand -> subcommand.replace("_", "").split(" ")[0])
+                    .filter(subcommand -> subcommand.replace("_", "").startsWith(args[length - 1]))
                     .toList());
         } else {
             // Return subcommands for the specified length
             String parentSubcommand = String.join(" ", Arrays.copyOfRange(args, 0, length - 1));
             matchingSubcommands.addAll(subCommands.keySet().stream()
-                    .filter(subcommand -> subcommand.startsWith(parentSubcommand + " "))
-                    .map(subcommand -> subcommand.substring(parentSubcommand.length() + 1))
-                    .filter(subcommand -> !subcommand.contains(" "))
+                    .filter(subcommand -> subcommand.replace("_", "").startsWith(parentSubcommand + " "))
+                    .map(subcommand -> subcommand.replace("_", "").substring(parentSubcommand.length() + 1))
+                    .filter(subcommand -> !subcommand.replace("_", "").contains(" "))
                     .toList());
         }
 

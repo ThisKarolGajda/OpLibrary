@@ -1,6 +1,8 @@
 package me.opkarol.oplibrary.configurationfile;
 
 import com.tchristofferson.configupdater.ConfigUpdater;
+import me.opkarol.oplibrary.location.OpSerializableLocation;
+import me.opkarol.oplibrary.location.StringUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -8,6 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
  * The ConfigurationFile class facilitates the management of plugin configuration files in Bukkit/Spigot projects.
@@ -18,6 +24,7 @@ public class ConfigurationFile implements IConfigurationFileHelper {
     private final Plugin plugin;
     private final String fileName;
     private FileConfiguration fileConfiguration;
+    private final Map<String, Object> cache = new HashMap<>();
 
     /**
      * Constructor for the ConfigurationFile class.
@@ -147,6 +154,7 @@ public class ConfigurationFile implements IConfigurationFileHelper {
     @Override
     public void reload() {
         fileConfiguration = YamlConfiguration.loadConfiguration(file);
+        cache.clear();
     }
 
     /**
@@ -170,9 +178,72 @@ public class ConfigurationFile implements IConfigurationFileHelper {
      */
     @Override
     public Object get(String path) {
-        if (fileConfiguration != null) {
-            return fileConfiguration.get(path);
+        if (cache.containsKey(path)) {
+            return cache.get(path);
         }
+
+        if (fileConfiguration != null) {
+            Object object = fileConfiguration.get(path);
+            cache.put(path, object);
+            return object;
+        }
+
+        return null;
+    }
+
+    public int getInt(String path) {
+        return StringUtil.getInt(get(path));
+    }
+
+    public double getDouble(String path) {
+        return StringUtil.getDouble(get(path));
+    }
+
+    public float getFloat(String path) {
+        return StringUtil.getFloat(get(path));
+    }
+
+    public OpSerializableLocation getLocation(String path) {
+        return new OpSerializableLocation(getString(path));
+    }
+
+    public <K extends Enum<K>> Optional<K> getEnum(String path, Class<K> enumType) {
+        return StringUtil.getEnumValue(getString(path), enumType);
+    }
+
+    public <K extends Enum<K>> K getUnsafeEnum(String path, Class<K> enumType) {
+        return getEnum(path, enumType).orElse(null);
+    }
+
+    public <K extends Enum<K>> void useEnumValue(String path, Class<K> clazz, Consumer<K> consumer) {
+        StringUtil.getEnumValue(getString(path), clazz).ifPresent(consumer);
+    }
+
+    public boolean getBoolean(String path) {
+        if (cache.containsKey(path)) {
+            return (boolean) cache.get(path);
+        }
+
+        if (fileConfiguration != null) {
+            boolean object = fileConfiguration.getBoolean(path);
+            cache.put(path, object);
+            return object;
+        }
+
+        return false;
+    }
+
+    public String getString(String path) {
+        if (cache.containsKey(path)) {
+            return (String) cache.get(path);
+        }
+
+        if (fileConfiguration != null) {
+            String object = fileConfiguration.getString(path);
+            cache.put(path, object);
+            return object;
+        }
+
         return null;
     }
 }

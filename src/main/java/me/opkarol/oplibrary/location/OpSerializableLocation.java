@@ -7,6 +7,7 @@ import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
@@ -203,6 +204,10 @@ public class OpSerializableLocation implements Serializable, SerializableFieldOr
         return String.format("X: %s Y: %s Z: %s World: %s", getShortX(), getShortY(), getShortZ(), getStringWorld());
     }
 
+    public String toFamilyStringWithoutWorld() {
+        return String.format("X: %s Y: %s Z: %s", getShortX(), getShortY(), getShortZ());
+    }
+
     public boolean isNotValid() {
         return toString().equals("0.0;0.0;0.0;0.0;0.0;null");
     }
@@ -227,5 +232,18 @@ public class OpSerializableLocation implements Serializable, SerializableFieldOr
     @Override
     public Object deserialize(String s) {
         return new OpSerializableLocation(s);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        OpSerializableLocation that = (OpSerializableLocation) o;
+        return Double.compare(that.x, x) == 0 && Double.compare(that.y, y) == 0 && Double.compare(that.z, z) == 0 && Float.compare(that.pitch, pitch) == 0 && Float.compare(that.yaw, yaw) == 0 && Objects.equals(world, that.world) && Objects.equals(worldUUID, that.worldUUID) && Objects.equals(lastLocation, that.lastLocation);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y, z, pitch, yaw, world, worldUUID, lastLocation);
     }
 }

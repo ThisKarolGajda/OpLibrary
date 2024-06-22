@@ -66,6 +66,14 @@ public class Vault {
         return economy.has(player, amount);
     }
 
+    public double get(OfflinePlayer player) {
+        if (!isEnabled()) {
+            return 0;
+        }
+
+        return economy.getBalance(player);
+    }
+
     public enum VAULT_RETURN_INFO {
         PLUGIN_NOT_ENABLED, WITHDRAW_SUCCESSFUL, WITHDRAW_NOT_SUCCESSFUL, WITHDRAW_TOO_BROKE, DEPOSIT_SUCCESSFUL, DEPOSIT_NOT_SUCCESSFUL
     }
@@ -76,5 +84,9 @@ public class Vault {
 
     public static VAULT_RETURN_INFO add(OfflinePlayer player, double amount) {
         return getInstance().deposit(player, amount);
+    }
+
+    public static double getBalance(OfflinePlayer player) {
+        return getInstance().get(player);
     }
 }

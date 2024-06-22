@@ -1,6 +1,6 @@
-package me.opkarol.oplibrary.database.relational;
+package me.opkarol.oplibrary.database;
 
-import me.opkarol.oplibrary.database.manager.IDatabase;
+import me.opkarol.oplibrary.database.manager.AbstractDatabase;
 import me.opkarol.oporm.DatabaseEntity;
 import me.opkarol.oporm.OpOrm;
 import org.jetbrains.annotations.NotNull;
@@ -10,12 +10,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SqlDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> implements IDatabase<PK, T> {
+public class SQLDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> extends AbstractDatabase<PK, T> {
     private final OpOrm orm;
     private final Class<T> clazz;
     private Map<PK, T> cache = new HashMap<>();
 
-    public SqlDatabase(String url, String host, String password, Class<T> clazz) {
+    public SQLDatabase(String url, String host, String password, Class<T> clazz) {
         this.clazz = clazz;
         this.orm = new OpOrm(url, host, password);
     }

@@ -3,8 +3,9 @@ package me.opkarol.oplibrary;
 import me.opkarol.oplibrary.autostart.OpAutoDisable;
 import me.opkarol.oplibrary.commands.CommandRegister;
 import me.opkarol.oplibrary.configurationfile.ConfigurationFile;
-import me.opkarol.oplibrary.database.manager.DatabaseImpl;
-import me.opkarol.oplibrary.database.manager.settings.DatabaseFactory;
+import me.opkarol.oplibrary.database.DatabaseTypesCache;
+import me.opkarol.oplibrary.database.manager.DatabaseFactory;
+import me.opkarol.oplibrary.database.manager.DatabaseHolder;
 import me.opkarol.oplibrary.inventories.InventoryListener;
 import me.opkarol.oplibrary.inventories.ItemBuilder;
 import me.opkarol.oplibrary.runnable.OpRunnable;
@@ -25,6 +26,7 @@ import org.bukkit.boss.BarColor;
 import org.bukkit.boss.BarStyle;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
@@ -39,6 +41,7 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     private final Messages messages = new Messages(this);
     private final ConfigurationFile inventoriesFile = new ConfigurationFile(this, "inventories.yml");
     private final ConfigurationFile configurationFile = new ConfigurationFile(this, "config.yml");
+    private final DatabaseTypesCache databaseCache = new DatabaseTypesCache();
     private Metrics metrics;
 
     {
@@ -110,6 +113,11 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     }
 
     public <T> void register(T t) {
+        if (t instanceof Class) {
+            getLogger().info("Cannot register class as object. Use register(Class<T> clazz, T t) instead.");
+            return;
+        }
+
         getDependencyManager().register((Class<T>) t.getClass(), t);
     }
 
@@ -123,6 +131,10 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         Messages.reload();
     }
 
+    public DatabaseTypesCache getDatabaseCache() {
+        return databaseCache;
+    }
+
     public static @NotNull String format(String message) {
         return FormatTool.formatMessage(message);
     }
@@ -131,7 +143,7 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         return FormatTool.formatList(list);
     }
 
-    public static Object formatToObject(Object object) {
+    public static Object toFormattedObject(Object object) {
         if (object == null) {
             return null;
         }
@@ -149,7 +161,7 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         return null;
     }
 
-    public static String formatToString(Object object) {
+    public static String toFormattedString(Object object) {
         if (object == null) {
             return null;
         }
@@ -171,6 +183,10 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         return MathUtils.getRandomInt(min, max);
     }
 
+    public static double getRandom(double min, double max) {
+        return MathUtils.getRandomDouble(min, max);
+    }
+
     public ItemBuilder head(String texture) {
         return Heads.get(texture);
     }
@@ -188,20 +204,40 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
             return new OpRunnable(runnable).runTaskLater(delay);
         }
 
+        public static @NotNull OpRunnable runLater(Consumer<OpRunnable> consumer, long delay) {
+            return new OpRunnable(consumer).runTaskLater(delay);
+        }
+
         public static @NotNull OpRunnable runTimer(Runnable runnable, long delay) {
             return new OpRunnable(runnable).runTaskTimer(delay);
+        }
+
+        public static @NotNull OpRunnable runTimer(Consumer<OpRunnable> consumer, long delay) {
+            return new OpRunnable(consumer).runTaskTimer(delay);
         }
 
         public static @NotNull OpRunnable runAsync(Runnable runnable) {
             return new OpRunnable(runnable).runTaskAsynchronously();
         }
 
+        public static @NotNull OpRunnable runAsync(Consumer<OpRunnable> consumer) {
+            return new OpRunnable(consumer).runTaskAsynchronously();
+        }
+
         public static @NotNull OpRunnable runLaterAsync(Runnable runnable, long delay) {
             return new OpRunnable(runnable).runTaskLaterAsynchronously(delay);
         }
 
+        public static @NotNull OpRunnable runLaterAsync(Consumer<OpRunnable> consumer, long delay) {
+            return new OpRunnable(consumer).runTaskLaterAsynchronously(delay);
+        }
+
         public static @NotNull OpRunnable runTimerAsync(Runnable runnable, long delay) {
             return new OpRunnable(runnable).runTaskTimerAsynchronously(delay);
+        }
+
+        public static @NotNull OpRunnable runTimerAsync(Consumer<OpRunnable> consumer, long delay) {
+            return new OpRunnable(consumer).runTaskTimerAsynchronously(delay);
         }
 
         public static void runTimes(Runnable runnable, int times) {
@@ -210,6 +246,14 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
 
         public static void runTimes(Consumer<OpRunnable> consumer, int times) {
             new OpTimerRunnable().run(consumer, times);
+        }
+
+        public static void runTimes(Runnable runnable, int times, int delay) {
+            new OpTimerRunnable().run(runnable, times, delay);
+        }
+
+        public static void runTimes(Consumer<OpRunnable> consumer, int times, int delay) {
+            new OpTimerRunnable().run(consumer, times, delay);
         }
     }
 
@@ -332,6 +376,13 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
                     .display(player);
         }
 
+        public static void particle(Particle particle, Location location, int amount) {
+            new OpParticle(particle)
+                    .setLocation(location)
+                    .setAmount(amount)
+                    .displayForAllOnline();
+        }
+
         public static void particle(Player player, Particle particle, Location location, int amount, float offsetX, float offsetY, float offsetZ) {
             new OpParticle(particle)
                     .setLocation(location)
@@ -340,6 +391,16 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
                     .setOffsetY(offsetY)
                     .setOffsetZ(offsetZ)
                     .display(player);
+        }
+
+        public static void particle(Particle particle, Location location, int amount, float offsetX, float offsetY, float offsetZ) {
+            new OpParticle(particle)
+                    .setLocation(location)
+                    .setAmount(amount)
+                    .setOffsetX(offsetX)
+                    .setOffsetY(offsetY)
+                    .setOffsetZ(offsetZ)
+                    .displayForAllOnline();
         }
 
         public static void particle(Player player, @NotNull OpParticle particle, int amount) {
@@ -401,13 +462,43 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     }
 
     public static class Database {
-        public static <PK extends Serializable, T extends DatabaseEntity<PK>> DatabaseImpl<PK, T> getFactory(Class<T> clazz) {
+        public static <PK extends Serializable, T extends DatabaseEntity<PK>> DatabaseHolder<PK, T> getFactory(Class<T> clazz, Class<T[]> clazzArray) {
             ConfigurationFile config = Plugin.getInstance().getConfigurationFile();
-            if (config.get("databaseType").equals("MYSQL")) {
-                return DatabaseFactory.createSql("jdbc:mysql://" + config.getFileConfiguration().getString("connectionSettings.host") + ":" + config.getFileConfiguration().getString("connectionSettings.port") + "/" + config.getFileConfiguration().getString("connectionSettings.database") + "?autoReconnect=true", config.getFileConfiguration().getString("connectionSettings.username"), config.getFileConfiguration().getString("connectionSettings.password"), clazz);
+            String databaseType = config.getFileConfiguration().getString("databaseType");
+            String lastPartOfClassName = clazz.getSimpleName().toLowerCase() + ".db";
+
+            if ("MYSQL".equals(databaseType)) {
+                String mysqlUrl = String.format("jdbc:mysql://%s:%s/%s?autoReconnect=true",
+                        config.getFileConfiguration().getString("connectionSettings.host"),
+                        config.getFileConfiguration().getString("connectionSettings.port"),
+                        config.getFileConfiguration().getString("connectionSettings.database"));
+                String username = config.getFileConfiguration().getString("connectionSettings.username");
+                String password = config.getFileConfiguration().getString("connectionSettings.password");
+                return DatabaseFactory.createSql(mysqlUrl, username, password, clazz);
+            } else if ("JSON".equals(databaseType) || databaseType == null) {
+                return DatabaseFactory.createJSON(lastPartOfClassName, clazz, clazzArray, false);
             } else {
-                return DatabaseFactory.createFlat(Plugin.getInstance(), "database-save.db");
+                return DatabaseFactory.createFlat(Plugin.getInstance(), lastPartOfClassName);
             }
         }
+
+
+        @Contract("_ -> new")
+        public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseHolder<PK, T> getFlatDatabase(String fileName) {
+            return DatabaseFactory.createFlat(Plugin.getInstance(), fileName);
+        }
+
+        public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseHolder<PK, T> getJSONDatabase(Class<T> clazz, Class<T[]> classArray, String fileName) {
+            return DatabaseFactory.createJSON(fileName, clazz, classArray, false);
+        }
+
+        @Contract("_, _, _, _ -> new")
+        public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseHolder<PK, T> getSQLDatabase(Class<T> clazz, String url, String host, String password) {
+            return DatabaseFactory.createSql(url, host, password, clazz);
+        }
+    }
+
+    public static ConfigurationFile getConfiguration() {
+        return getInstance().getConfigurationFile();
     }
 }

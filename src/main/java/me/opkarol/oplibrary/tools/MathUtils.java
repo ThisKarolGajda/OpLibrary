@@ -53,4 +53,8 @@ public class MathUtils {
 
         return roman.toString();
     }
+
+    public static double getRandomDouble(double min, double max) {
+        return Math.random() * (max - min) + min;
+    }
 }

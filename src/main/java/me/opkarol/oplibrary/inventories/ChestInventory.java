@@ -36,6 +36,29 @@ public abstract class ChestInventory extends AbstractInventory {
         this.rows = rows;
     }
 
+    public void setListPattern(Player player) {
+        setListPattern(player, null);
+    }
+
+    public void setListPattern(Player player, @Nullable Runnable onHomeAction) {
+        if (onHomeAction != null) {
+            setItemPreviousPage(rows * 9 - 3, player);
+            setItemHome(rows * 9 - 2, player, onHomeAction);
+            setItemNextPage(rows * 9 - 1, player);
+        } else {
+            setItemPreviousPage(rows * 9 - 2, player);
+            setItemNextPage(rows * 9 - 1, player);
+        }
+
+        for (int row = 1; row < rows - 1; row++) {
+            setGlobalBlank(row * 9);
+            setGlobalBlank(row * 9 + 8);
+        }
+
+        setGlobalRowEmptyIfNotTaken(1);
+        setGlobalRowEmptyIfNotTaken(rows);
+    }
+
     public void fillEmpty(String id, int page, ItemStack item, Consumer<InventoryClickEvent> action) {
         fillEmpty(id, page, item, action, new HashMap<>());
     }
@@ -162,13 +185,12 @@ public abstract class ChestInventory extends AbstractInventory {
         replacements.forEach((replace, replacement) -> name.set(name.get().replace(replace, replacement)));
         meta.setDisplayName(FormatTool.formatMessage(name.get()));
 
+
         // Lore
         AtomicReference<List<String>> lore = new AtomicReference<>(itemStackTranslatable.lore());
         replacements.forEach((replace, replacement) -> {
             List<String> newLore = new ArrayList<>();
-
             lore.get().forEach(string -> newLore.add(string.replace(replace, replacement)));
-
             lore.set(newLore);
         });
         meta.setLore(FormatTool.formatList(lore.get()));
@@ -222,14 +244,14 @@ public abstract class ChestInventory extends AbstractInventory {
         });
     }
 
-    public void setGlobalEmpty(int slot) {
+    public void setGlobalBlank(int slot) {
         setGlobalItem(slot, EMPTY_ITEM);
     }
 
     public void setGlobalRowEmptyIfNotTaken(int row) {
         for (int i = (row - 1) * 9; i < row * 9; i++) {
             if (!globalItems.containsKey(i)) {
-                setGlobalEmpty(i);
+                setGlobalBlank(i);
             }
         }
     }
@@ -255,6 +277,18 @@ public abstract class ChestInventory extends AbstractInventory {
                 continue;
             }
 
+            Map<Integer, InteractableItem> pageMap = getOrCreatePage(page);
+            pageMap.put(slot, EMPTY_ITEM);
+            items.put(page, pageMap);
+        }
+    }
+
+    public void setBlankItem(int @NotNull [] slots) {
+        setBlankItem(currentPage, slots);
+    }
+
+    public void setBlankItem(int page, int @NotNull [] slots) {
+        for (int slot : slots) {
             Map<Integer, InteractableItem> pageMap = getOrCreatePage(page);
             pageMap.put(slot, EMPTY_ITEM);
             items.put(page, pageMap);

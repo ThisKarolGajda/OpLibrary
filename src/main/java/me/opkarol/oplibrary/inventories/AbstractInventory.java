@@ -23,13 +23,13 @@ public abstract class AbstractInventory extends BasicListener {
         file.getConfigurationSectionKeys(path + ".items").ifPresent(strings -> strings.forEach(string -> {
             String name = file.get(path + ".items." + string + ".name").toString();
             List<String> lore = file.getFileConfiguration().getStringList(path + ".items." + string + ".lore");
-            items.put(string, new ItemStackTranslatable(FormatTool.formatMessage(name), FormatTool.formatList(lore)));
+            items.put(string, new ItemStackTranslatable(name, lore));
         }));
 
         file.getConfigurationSectionKeys("global").ifPresent(strings -> strings.forEach(string -> {
             String name = file.get("global." + string + ".name").toString();
             List<String> lore = file.getFileConfiguration().getStringList("global." + string + ".lore");
-            items.put(string, new ItemStackTranslatable(FormatTool.formatMessage(name), FormatTool.formatList(lore)));
+            items.put(string, new ItemStackTranslatable(name, lore));
         }));
     }
 

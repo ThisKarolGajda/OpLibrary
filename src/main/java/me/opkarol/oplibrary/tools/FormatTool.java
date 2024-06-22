@@ -15,6 +15,8 @@ public class FormatTool {
 
     private static final char COLOR_CHAR = '§';
     public static final String CENTER_PREFIX = "<CEN>";
+    public static final String SMALL_LETTERS_PREFIX = "<SL>";
+    public static final String HIGH_LETTERS_PREFIX = "<H>";
 
     public static @NotNull String formatMessage(String message) {
         try {
@@ -28,16 +30,48 @@ public class FormatTool {
         if (s == null) {
             return null;
         }
+
+        // Process <SL> prefixes
+        int slIndex = s.indexOf(SMALL_LETTERS_PREFIX);
+        while (slIndex != -1) {
+            int endIndex = s.indexOf(SMALL_LETTERS_PREFIX, slIndex + SMALL_LETTERS_PREFIX.length());
+            if (endIndex == -1) {
+                endIndex = s.length();
+            }
+            String textBetweenPrefixes = s.substring(slIndex + SMALL_LETTERS_PREFIX.length(), endIndex);
+            String replacedText = SmallLettersTool.replaceToSmallLetters(textBetweenPrefixes);
+            s = s.substring(0, slIndex) + replacedText + s.substring(endIndex);
+            slIndex = s.indexOf(SMALL_LETTERS_PREFIX, slIndex + replacedText.length() + SMALL_LETTERS_PREFIX.length());
+        }
+        s = s.replace(SMALL_LETTERS_PREFIX, "");
+
+        // Process <H> prefixes
+        int hIndex = s.indexOf(HIGH_LETTERS_PREFIX);
+        while (hIndex != -1) {
+            int endIndex = s.indexOf(HIGH_LETTERS_PREFIX, hIndex + HIGH_LETTERS_PREFIX.length());
+            if (endIndex == -1) {
+                endIndex = s.length();
+            }
+            String textBetweenPrefixes = s.substring(hIndex + HIGH_LETTERS_PREFIX.length(), endIndex);
+            String replacedText = textBetweenPrefixes.toUpperCase();
+            s = s.substring(0, hIndex) + replacedText + s.substring(endIndex);
+            hIndex = s.indexOf(HIGH_LETTERS_PREFIX, hIndex + replacedText.length() + HIGH_LETTERS_PREFIX.length());
+        }
+        s = s.replace(HIGH_LETTERS_PREFIX, "");
+
         s = ChatColor.translateAlternateColorCodes('&', s);
         if (s.startsWith(CENTER_PREFIX)) {
             s = CenteredMessageTool.center(s.substring(CENTER_PREFIX.length()));
         }
+
         return s;
     }
 
     /**
-     * This will be deleted, but to keep backwards-compatibility,
-     * I don't know when.
+     * This will be deleted, but to keep backwards-compatibility it's here
+     * I don't know how long tho.
+     *
+     * @deprecated Use {@link #formatList(List)} instead.
      */
     @Deprecated
     public static @NotNull List<String> format(List<String> list) {
@@ -81,7 +115,27 @@ public class FormatTool {
         return matcher1.appendTail(buffer2).toString();
     }
 
-    public static @NotNull String gradient(String start, String end, @NotNull String text) {
+    public static String gradient(String message) {
+        String pattern = "(&l)?#!<(\\w+)>(.*?)#!<(\\w+)>";
+        Pattern r = Pattern.compile(pattern);
+        Matcher m = r.matcher(message);
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (m.find()) {
+            String boldTag = m.group(1);
+            String start = m.group(2);
+            String end = m.group(4);
+            String text = m.group(3);
+            sb.append(message, i, m.start());
+            sb.append(gradient(boldTag != null, "#" + start, "#" + end, text));
+            i = m.end();
+        }
+
+        sb.append(message.substring(i));
+        return sb.toString();
+    }
+
+    public static String gradient(boolean isBold, String start, String end, String text) {
         start = start.replace("<", "").replace(">", "");
         end = end.replace("<", "").replace(">", "");
         int r1 = Integer.valueOf(start.substring(1, 3), 16);
@@ -96,26 +150,15 @@ public class FormatTool {
             int g = (int) (g1 + (g2 - g1) * (i / (text.length() - 1.0)));
             int b = (int) (b1 + (b2 - b1) * (i / (text.length() - 1.0)));
             String hex = String.format("#<%02x%02x%02x>", r, g, b);
-            builder.append(hex).append(text.charAt(i));
-        }
-        return builder.toString();
-    }
+            if (isBold) {
+                builder.append("&l").append(hex);
+            } else {
+                builder.append(hex);
+            }
 
-    public static @NotNull String gradient(String message) {
-        String pattern = "#!<(\\w+)>(.*?)#!<(\\w+)>";
-        Pattern r = Pattern.compile(pattern);
-        Matcher m = r.matcher(message);
-        StringBuilder sb = new StringBuilder();
-        int i = 0;
-        while (m.find()) {
-            String start = m.group(1);
-            String end = m.group(3);
-            String text = m.group(2);
-            sb.append(message, i, m.start());
-            sb.append(gradient("#" + start, "#" + end, text));
-            i = m.end();
+            builder.append(text.charAt(i));
         }
-        sb.append(message.substring(i));
-        return sb.toString();
+
+        return builder.toString();
     }
 }
