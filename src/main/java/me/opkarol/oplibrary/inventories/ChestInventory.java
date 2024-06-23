@@ -116,11 +116,11 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void setItem(String id, int slot, Material material, boolean glowing, Consumer<InventoryClickEvent> action) {
-        setItem(id, 0, slot, glowing ? new ItemBuilder(material).setEnchants(Map.of(Enchantment.LUCK, 1)).setFlags(ItemFlag.HIDE_ENCHANTS) : new ItemBuilder(material), action, new HashMap<>());
+        setItem(id, 0, slot, glowing ? new ItemBuilder(material).setEnchants(Map.of(Enchantment.LUCK_OF_THE_SEA, 1)).setFlags(ItemFlag.HIDE_ENCHANTS) : new ItemBuilder(material), action, new HashMap<>());
     }
 
     public void setItem(String id, int slot, Material material, boolean glowing, Consumer<InventoryClickEvent> action, Map<String, String> replacements) {
-        setItem(id, 0, slot, glowing ? new ItemBuilder(material).setEnchants(Map.of(Enchantment.LUCK, 1)).setFlags(ItemFlag.HIDE_ENCHANTS) : new ItemBuilder(material), action, replacements);
+        setItem(id, 0, slot, glowing ? new ItemBuilder(material).setEnchants(Map.of(Enchantment.LUCK_OF_THE_SEA, 1)).setFlags(ItemFlag.HIDE_ENCHANTS) : new ItemBuilder(material), action, replacements);
     }
 
     public void setItem(String id, int slot, ItemStack item, Consumer<InventoryClickEvent> action) {
