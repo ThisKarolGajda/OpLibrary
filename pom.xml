@@ -6,7 +6,7 @@
 
     <groupId>me.opkarol</groupId>
     <artifactId>OpLibrary</artifactId>
-    <version>3.0</version>
+    <version>3.2.1</version>
     <packaging>jar</packaging>
 
     <name>OpLibrary</name>
