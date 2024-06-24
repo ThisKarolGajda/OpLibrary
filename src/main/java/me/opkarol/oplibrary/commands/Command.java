@@ -150,14 +150,22 @@ public class Command extends BukkitCommand {
             }
         }
 
+        executeNoUseMethod(args, player);
+
+        return true;
+    }
+
+    private void executeNoUseMethod(String[] args, Player player) {
         if (noUseMethod != null) {
             try {
-                noUseMethod.invoke(classObject, player, args);
+                switch (noUseMethod.getParameterCount()) {
+                    case 0 -> noUseMethod.invoke(classObject);
+                    case 1 -> noUseMethod.invoke(classObject, player);
+                    case 2 -> noUseMethod.invoke(classObject, player, args);
+                }
             } catch (IllegalAccessException | InvocationTargetException ignore) {
             }
         }
-
-        return true;
     }
 
     private boolean sameArgs(String @NotNull [] split, String @NotNull [] args) {
@@ -243,12 +251,7 @@ public class Command extends BukkitCommand {
             }
             return true;
         } else {
-            if (noUseMethod != null) {
-                try {
-                    noUseMethod.invoke(classObject, player, new String[0]);
-                } catch (IllegalAccessException | InvocationTargetException ignore) {
-                }
-            }
+            executeNoUseMethod(new String[0], player);
         }
 
         return false;
