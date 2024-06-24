@@ -64,7 +64,26 @@ public class Command extends BukkitCommand {
                 throw new IllegalStateException("This command is already registered.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            unregister();
+            Field bukkitCommandMap;
+            try {
+                bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            } catch (NoSuchFieldException ex) {
+                throw new RuntimeException(ex);
+            }
+            bukkitCommandMap.setAccessible(true);
+            CommandMap commandMap;
+            try {
+                commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+            org.bukkit.command.Command command = commandMap.getCommand(this.getName());
+            if (command == null || !command.isRegistered()) {
+                commandMap.register(getName(), Plugin.getInstance().getName(), this);
+            } else {
+                throw new IllegalStateException("This command is already registered.");
+            }
         }
     }
 
