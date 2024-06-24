@@ -150,9 +150,11 @@ public class Command extends BukkitCommand {
             }
         }
 
-        try {
-            noUseMethod.invoke(classObject, player, args);
-        } catch (IllegalAccessException | InvocationTargetException ignore) {
+        if (noUseMethod != null) {
+            try {
+                noUseMethod.invoke(classObject, player, args);
+            } catch (IllegalAccessException | InvocationTargetException ignore) {
+            }
         }
 
         return true;
@@ -240,6 +242,13 @@ public class Command extends BukkitCommand {
                 e.printStackTrace();
             }
             return true;
+        } else {
+            if (noUseMethod != null) {
+                try {
+                    noUseMethod.invoke(classObject, player, new String[0]);
+                } catch (IllegalAccessException | InvocationTargetException ignore) {
+                }
+            }
         }
 
         return false;
