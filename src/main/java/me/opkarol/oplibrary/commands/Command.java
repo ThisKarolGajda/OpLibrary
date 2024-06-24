@@ -151,7 +151,7 @@ public class Command extends BukkitCommand {
         }
 
         try {
-            noUseMethod.invoke(player, args);
+            noUseMethod.invoke(classObject, player, args);
         } catch (IllegalAccessException | InvocationTargetException ignore) {
         }
 
