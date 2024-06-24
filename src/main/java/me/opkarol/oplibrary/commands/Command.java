@@ -1,10 +1,7 @@
 package me.opkarol.oplibrary.commands;
 
 import me.opkarol.oplibrary.Plugin;
-import me.opkarol.oplibrary.commands.annotations.Default;
-import me.opkarol.oplibrary.commands.annotations.Permission;
-import me.opkarol.oplibrary.commands.annotations.Subcommand;
-import me.opkarol.oplibrary.commands.annotations.Cooldown;
+import me.opkarol.oplibrary.commands.annotations.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandMap;
@@ -27,6 +24,7 @@ public class Command extends BukkitCommand {
     private final Map<String, Method> subCommands = new HashMap<>();
     private Method commandMethod;
     private final Map<UUID, Long> cooldownMap = new HashMap<>();
+    private Method noUseMethod;
 
     public Command(Class<?> clazz) {
         super(clazz.getAnnotation(me.opkarol.oplibrary.commands.annotations.Command.class).value());
@@ -38,6 +36,7 @@ public class Command extends BukkitCommand {
 
         // Set command default method
         Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(Default.class)).findAny().ifPresent(method -> this.commandMethod = method);
+        Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(NoUse.class)).findAny().ifPresent(method -> this.noUseMethod = method);
 
         // Set command subcommands
         for (Method method : Arrays.stream(clazz.getDeclaredMethods())
@@ -149,6 +148,11 @@ public class Command extends BukkitCommand {
                     }
                 }
             }
+        }
+
+        try {
+            noUseMethod.invoke(player, args);
+        } catch (IllegalAccessException | InvocationTargetException ignore) {
         }
 
         return true;
