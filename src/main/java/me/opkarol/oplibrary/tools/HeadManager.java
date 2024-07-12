@@ -27,7 +27,7 @@ import java.util.concurrent.CompletableFuture;
 @SuppressWarnings("unused")
 public class HeadManager {
     private static final Map<UUID, String> HEAD_CACHE = new HashMap<>();
-    private static final Map<String, ItemBuilder> HEAD_CACHE_MINECRAFT_VALUE = new HashMap<>();
+    private static final Map<String, ItemStack> HEAD_CACHE_MINECRAFT_VALUE = new HashMap<>();
 
     public static @Nullable String getHeadValueFromRequest(String name) {
         try {
@@ -68,6 +68,7 @@ public class HeadManager {
             } catch (IOException ignored) {
             }
         }
+
         return sb.toString();
     }
 
@@ -85,6 +86,7 @@ public class HeadManager {
             player.getInventory().addItem(getHeadValue(HEAD_CACHE.get(uuid)));
             return;
         }
+
         new OpRunnable(() -> {
             String value;
             value = getHeadValueFromRequest(player.getName());
@@ -99,21 +101,20 @@ public class HeadManager {
 
     public static ItemStack getHeadValue(@NotNull OfflinePlayer player) {
         UUID uuid = player.getUniqueId();
-        if (HEAD_CACHE.containsKey(uuid)) {
-            return getHeadValue(HEAD_CACHE.get(uuid));
+        if (HEAD_CACHE_MINECRAFT_VALUE.containsKey(uuid.toString())) {
+            return HEAD_CACHE_MINECRAFT_VALUE.get(uuid.toString());
         }
 
-        new OpRunnable(() -> {
-            String value;
-            value = getHeadValueFromRequest(player.getName());
-            if (value == null) {
-                value = "";
-            }
-            ItemStack item = getHeadValue(value);
-            HEAD_CACHE.put(uuid, value);
-        }).runTaskAsynchronously();
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        if (skullMeta != null) {
+            skullMeta.setOwningPlayer(player);
+        }
 
-        return new ItemBuilder(Material.PLAYER_HEAD);
+        skull.setItemMeta(skullMeta);
+        HEAD_CACHE_MINECRAFT_VALUE.put(uuid.toString(), skull);
+
+        return skull;
     }
 
     public static @NotNull CompletableFuture<ItemStack> getHeadValueAsync(@NotNull OfflinePlayer player) {
@@ -186,7 +187,7 @@ public class HeadManager {
 
     public static @Nullable ItemBuilder getHeadFromMinecraftValueUrl(@NotNull String texture) {
         if (HEAD_CACHE_MINECRAFT_VALUE.get(texture) != null) {
-            return HEAD_CACHE_MINECRAFT_VALUE.get(texture);
+            return new ItemBuilder(HEAD_CACHE_MINECRAFT_VALUE.get(texture));
         }
 
         final String texturesMinecraftURL = "https://textures.minecraft.net/texture/";

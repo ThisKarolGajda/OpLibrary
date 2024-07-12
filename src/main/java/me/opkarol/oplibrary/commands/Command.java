@@ -1,10 +1,7 @@
 package me.opkarol.oplibrary.commands;
 
 import me.opkarol.oplibrary.Plugin;
-import me.opkarol.oplibrary.commands.annotations.Default;
-import me.opkarol.oplibrary.commands.annotations.Permission;
-import me.opkarol.oplibrary.commands.annotations.Subcommand;
-import me.opkarol.oplibrary.commands.annotations.Cooldown;
+import me.opkarol.oplibrary.commands.annotations.*;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandMap;
@@ -27,6 +24,7 @@ public class Command extends BukkitCommand {
     private final Map<String, Method> subCommands = new HashMap<>();
     private Method commandMethod;
     private final Map<UUID, Long> cooldownMap = new HashMap<>();
+    private Method noUseMethod;
 
     public Command(Class<?> clazz) {
         super(clazz.getAnnotation(me.opkarol.oplibrary.commands.annotations.Command.class).value());
@@ -38,6 +36,7 @@ public class Command extends BukkitCommand {
 
         // Set command default method
         Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(Default.class)).findAny().ifPresent(method -> this.commandMethod = method);
+        Arrays.stream(clazz.getDeclaredMethods()).filter(method -> method.isAnnotationPresent(NoUse.class)).findAny().ifPresent(method -> this.noUseMethod = method);
 
         // Set command subcommands
         for (Method method : Arrays.stream(clazz.getDeclaredMethods())
@@ -64,7 +63,26 @@ public class Command extends BukkitCommand {
                 throw new IllegalStateException("This command is already registered.");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            unregister();
+            Field bukkitCommandMap;
+            try {
+                bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+            } catch (NoSuchFieldException ex) {
+                throw new RuntimeException(ex);
+            }
+            bukkitCommandMap.setAccessible(true);
+            CommandMap commandMap;
+            try {
+                commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
+            } catch (IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
+            org.bukkit.command.Command command = commandMap.getCommand(this.getName());
+            if (command == null || !command.isRegistered()) {
+                commandMap.register(getName(), Plugin.getInstance().getName(), this);
+            } else {
+                throw new IllegalStateException("This command is already registered.");
+            }
         }
     }
 
@@ -132,7 +150,22 @@ public class Command extends BukkitCommand {
             }
         }
 
+        executeNoUseMethod(args, player);
+
         return true;
+    }
+
+    private void executeNoUseMethod(String[] args, Player player) {
+        if (noUseMethod != null) {
+            try {
+                switch (noUseMethod.getParameterCount()) {
+                    case 0 -> noUseMethod.invoke(classObject);
+                    case 1 -> noUseMethod.invoke(classObject, player);
+                    case 2 -> noUseMethod.invoke(classObject, player, args);
+                }
+            } catch (IllegalAccessException | InvocationTargetException ignore) {
+            }
+        }
     }
 
     private boolean sameArgs(String @NotNull [] split, String @NotNull [] args) {
@@ -217,6 +250,8 @@ public class Command extends BukkitCommand {
                 e.printStackTrace();
             }
             return true;
+        } else {
+            executeNoUseMethod(new String[0], player);
         }
 
         return false;
