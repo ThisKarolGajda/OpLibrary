@@ -8,6 +8,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
@@ -90,5 +91,17 @@ public class Database<PK extends Serializable, T extends me.opkarol.oporm.Databa
 
     public boolean useMultiFilesForJSON() {
         return false;
+    }
+
+    public CompletableFuture<Void> saveAsync(T t) {
+        return CompletableFuture.runAsync(() -> save(t));
+    }
+
+    public CompletableFuture<Void> deleteAsync(PK id) {
+        return CompletableFuture.runAsync(() -> delete(id));
+    }
+
+    public CompletableFuture<Optional<T>> getByIdAsync(PK id) {
+        return CompletableFuture.supplyAsync(() -> get(id));
     }
 }
