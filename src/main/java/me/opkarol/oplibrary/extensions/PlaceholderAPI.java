@@ -18,6 +18,14 @@ public class PlaceholderAPI {
         enabled = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
     }
 
+    public static String set(OfflinePlayer player, String string) {
+        if (!getInstance().enabled) {
+            return string;
+        }
+
+        return me.clip.placeholderapi.PlaceholderAPI.setPlaceholders(player, string);
+    }
+
     public static PlaceholderAPI getInstance() {
         return placeholderAPI == null ? new PlaceholderAPI() : placeholderAPI;
     }

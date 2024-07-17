@@ -252,19 +252,19 @@ public class DiscordWebhook {
             return this;
         }
 
-        private record Footer(String text, String iconUrl) {
+        public record Footer(String text, String iconUrl) {
         }
 
-        private record Thumbnail(String url) {
+        public record Thumbnail(String url) {
         }
 
-        private record Image(String url) {
+        public record Image(String url) {
         }
 
-        private record Author(String name, String url, String iconUrl) {
+        public record Author(String name, String url, String iconUrl) {
         }
 
-        private record Field(String name, String value, boolean inline) {
+        public record Field(String name, String value, boolean inline) {
         }
     }
 

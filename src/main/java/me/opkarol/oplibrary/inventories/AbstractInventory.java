@@ -41,7 +41,7 @@ public abstract class AbstractInventory extends BasicListener {
         return items;
     }
 
-    record ItemStackTranslatable(String name, List<String> lore) {
+    public record ItemStackTranslatable(String name, List<String> lore) {
 
     }
 

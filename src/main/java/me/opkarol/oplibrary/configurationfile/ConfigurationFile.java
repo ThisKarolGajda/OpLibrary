@@ -18,6 +18,7 @@ import java.util.function.Consumer;
 /**
  * The ConfigurationFile class facilitates the management of plugin configuration files in Bukkit/Spigot projects.
  */
+@SuppressWarnings("all")
 public class ConfigurationFile implements IConfigurationFileHelper {
 
     private final File file;

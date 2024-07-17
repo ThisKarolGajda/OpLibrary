@@ -12,6 +12,7 @@ public class OpAutoDisable {
         autoStart = this;
     }
 
+    @SuppressWarnings("all")
     public static OpAutoDisable getInstance() {
         return autoStart == null ? new OpAutoDisable() : autoStart;
     }

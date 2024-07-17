@@ -17,4 +17,8 @@ public class DependencyManager {
     public void dispose() {
         map.clear();
     }
+
+    public Map<Class<?>, Object> getMap() {
+        return map;
+    }
 }

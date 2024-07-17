@@ -2,6 +2,7 @@ package me.opkarol.oplibrary.inventories;
 
 import me.opkarol.oplibrary.tools.FormatTool;
 import me.opkarol.oplibrary.tools.HeadManager;
+import me.opkarol.oplibrary.tools.Heads;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -127,6 +128,7 @@ public abstract class ChestInventory extends AbstractInventory {
         setItem(id, 0, slot, item, action, new HashMap<>());
     }
 
+    @SuppressWarnings("all")
     public void setGlobalItem(String id, int index, ItemStack item, Consumer<InventoryClickEvent> action) {
         ItemStackTranslatable itemStackTranslatable = getItems().getOrDefault(id, null);
         if (itemStackTranslatable == null) {
@@ -143,9 +145,16 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void setGlobalItem(String id, int index, ItemStack item, Consumer<InventoryClickEvent> action, Map<String, String> replacements) {
+        if (setPrivateItem(id, item, replacements)) return;
+
+        setGlobalItem(index, new InteractableItem(new ItemBuilder(item).secure(), action));
+    }
+
+    @SuppressWarnings("all")
+    private boolean setPrivateItem(String id, ItemStack item, Map<String, String> replacements) {
         ItemStackTranslatable itemStackTranslatable = getItems().getOrDefault(id, null);
         if (itemStackTranslatable == null) {
-            return;
+            return true;
         }
 
         // Name
@@ -165,8 +174,7 @@ public abstract class ChestInventory extends AbstractInventory {
         });
         meta.setLore(FormatTool.formatList(lore.get()));
         item.setItemMeta(meta);
-
-        setGlobalItem(index, new InteractableItem(new ItemBuilder(item).secure(), action));
+        return false;
     }
 
     public void setGlobalItem(int index, InteractableItem item) {
@@ -174,27 +182,7 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void setItem(String id, int pageIndex, int slot, ItemStack item, Consumer<InventoryClickEvent> action, Map<String, String> replacements) {
-        ItemStackTranslatable itemStackTranslatable = getItems().getOrDefault(id, null);
-        if (itemStackTranslatable == null) {
-            return;
-        }
-
-        // Name
-        ItemMeta meta = item.getItemMeta();
-        AtomicReference<String> name = new AtomicReference<>(itemStackTranslatable.name());
-        replacements.forEach((replace, replacement) -> name.set(name.get().replace(replace, replacement)));
-        meta.setDisplayName(FormatTool.formatMessage(name.get()));
-
-
-        // Lore
-        AtomicReference<List<String>> lore = new AtomicReference<>(itemStackTranslatable.lore());
-        replacements.forEach((replace, replacement) -> {
-            List<String> newLore = new ArrayList<>();
-            lore.get().forEach(string -> newLore.add(string.replace(replace, replacement)));
-            lore.set(newLore);
-        });
-        meta.setLore(FormatTool.formatList(lore.get()));
-        item.setItemMeta(meta);
+        if (setPrivateItem(id, item, replacements)) return;
 
         Map<Integer, InteractableItem> page = getOrCreatePage(pageIndex);
         page.put(slot, new InteractableItem(new ItemBuilder(item).secure(), action));
@@ -222,7 +210,7 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void setItemNextPage(int slot, Player player) {
-        setGlobalItem("next_page", slot, new ItemBuilder(HeadManager.getHeadFromMinecraftValueUrl("19bf3292e126a105b54eba713aa1b152d541a1d8938829c56364d178ed22bf")), event -> {
+        setGlobalItem("next_page", slot, new ItemBuilder(Heads.get("19bf3292e126a105b54eba713aa1b152d541a1d8938829c56364d178ed22bf")), event -> {
             event.setCancelled(true);
             nextPage();
             open(player);
@@ -230,7 +218,7 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void setItemPreviousPage(int slot, Player player) {
-        setGlobalItem("previous_page", slot, new ItemBuilder(HeadManager.getHeadFromMinecraftValueUrl("bd69e06e5dadfd84e5f3d1c21063f2553b2fa945ee1d4d7152fdc5425bc12a9")), event -> {
+        setGlobalItem("previous_page", slot, new ItemBuilder(Heads.get("bd69e06e5dadfd84e5f3d1c21063f2553b2fa945ee1d4d7152fdc5425bc12a9")), event -> {
             event.setCancelled(true);
             previousPage();
             open(player);
@@ -238,7 +226,7 @@ public abstract class ChestInventory extends AbstractInventory {
     }
 
     public void setItemHome(int slot, Player player, Runnable runnable) {
-        setGlobalItem("home_page", slot, new ItemBuilder(HeadManager.getHeadFromMinecraftValueUrl("8652e2b936ca8026bd28651d7c9f2819d2e923697734d18dfdb13550f8fdad5f")), event -> {
+        setGlobalItem("home_page", slot, new ItemBuilder(Heads.get("8652e2b936ca8026bd28651d7c9f2819d2e923697734d18dfdb13550f8fdad5f")),event -> {
             event.setCancelled(true);
             runnable.run();
         });
@@ -368,6 +356,7 @@ public abstract class ChestInventory extends AbstractInventory {
 
         @NotNull
         @Override
+        @SuppressWarnings("all")
         public org.bukkit.inventory.Inventory getInventory() {
             return null;
         }

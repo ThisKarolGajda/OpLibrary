@@ -1,20 +1,21 @@
 package me.opkarol.oplibrary.database;
 
-import com.google.gson.*;
 import me.opkarol.oplibrary.Plugin;
 import me.opkarol.oplibrary.configurationfile.ConfigurationFile;
 import me.opkarol.oplibrary.database.manager.AbstractDatabase;
 import me.opkarol.oporm.DatabaseEntity;
 
 import java.io.*;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import static me.opkarol.oplibrary.gson.GsonBuilder.gson;
+
+@SuppressWarnings("all")
 public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> extends AbstractDatabase<PK, T> {
     private Map<PK, T> cache;
-    private Gson gson;
     private final ConfigurationFile file;
     private final Class<T[]> classArray;
     private final Class<T> clazz;
@@ -40,21 +41,6 @@ public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>>
 
     @Override
     public void initialize() {
-        String dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(dateFormat);
-        this.gson = new GsonBuilder()
-                .registerTypeAdapter(
-                        LocalDateTime.class,
-                        (JsonDeserializer<LocalDateTime>) (json, type, jsonDeserializationContext) ->
-                                ZonedDateTime.parse(json.getAsJsonPrimitive().getAsString()).toLocalDateTime()
-                )
-                .registerTypeAdapter(
-                        LocalDateTime.class,
-                        (JsonSerializer<LocalDateTime>) (localDate, type, jsonSerializationContext) ->
-                                new JsonPrimitive(formatter.format(localDate)
-                                ))
-                .setPrettyPrinting()
-                .create();
         this.cache = new HashMap<>();
         initializeCache();
     }

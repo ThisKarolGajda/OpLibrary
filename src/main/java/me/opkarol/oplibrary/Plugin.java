@@ -100,10 +100,15 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         new InventoryListener().runListener();
         getConfigurationFile().safeUpdate();
         getInventoriesFile().safeUpdate();
-        if (registerBStatsOnStartup() != null) {
-            metrics = new Metrics(this, registerBStatsOnStartup());
-        }
         enable();
+        registerBStats();
+    }
+
+    private void registerBStats() {
+        Integer bstats = registerBStatsOnStartup();
+        if (bstats != null) {
+            metrics = new Metrics(this, bstats);
+        }
     }
 
     public abstract void enable();
