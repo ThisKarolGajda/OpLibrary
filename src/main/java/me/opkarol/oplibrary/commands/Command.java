@@ -26,8 +26,8 @@ public class Command extends BukkitCommand {
     private Method commandMethod;
     private Method noUseMethod;
 
-    private static final StringMessage YOU_DONT_HAVE_PERMISSION = new StringMessage("You don't have permission to use this command");
-    private static final StringMessage YOU_ARE_ON_COOLDOWN = new StringMessage("You need to wait before trying again");
+    private static StringMessage YOU_DONT_HAVE_PERMISSION = new StringMessage("You don't have permission to use this command");
+    private static StringMessage YOU_ARE_ON_COOLDOWN = new StringMessage("You need to wait before trying again");
 
     public Command(@NotNull Class<?> clazz) {
         super(clazz.getAnnotation(me.opkarol.oplibrary.commands.annotations.Command.class).value());
@@ -256,7 +256,8 @@ public class Command extends BukkitCommand {
             try {
                 method.invoke(classObject, player);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                Plugin.get(PluginDebugger.class).debug("Cannot invoke method " + method.getName() + " on player " + player.getName());
+                e.printStackTrace();
+                Plugin.get(PluginDebugger.class).debug("Cannot invoke method " + method.getName() + " on player " + player.getName() + ": " + e.getMessage() );
             }
             return true;
         } else {

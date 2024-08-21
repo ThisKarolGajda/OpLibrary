@@ -1,18 +1,36 @@
 package me.opkarol.oplibrary.injection.inventories.items;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-public final class GlobalItem {
-    private String id;
+@IgnoreInject
+public final class GlobalItem implements Cloneable {
+    private final String id;
     private String name;
     private List<String> lore;
     private int slot;
     private ItemStack itemStack;
-    private final Consumer<ItemClick> consumer;
+    private Function<Player, Map<String, Object>> replacements;
+    private Consumer<ItemClick> consumer;
+
+    public GlobalItem(String id, String name, List<String> lore, int slot, ItemStack itemStack, Function<Player, Map<String, Object>> replacements, Consumer<ItemClick> consumer) {
+        this.id = id;
+        this.name = name;
+        this.lore = lore;
+        this.slot = slot;
+        this.itemStack = itemStack;
+        this.replacements = replacements;
+        this.consumer = consumer;
+    }
 
     public GlobalItem(String id, String name, List<String> lore, int slot, ItemStack itemStack, Consumer<ItemClick> consumer) {
         this.id = id;
@@ -23,84 +41,105 @@ public final class GlobalItem {
         this.consumer = consumer;
     }
 
-    public GlobalItem(String id, String name, List<String> lore, ItemStack itemStack, Consumer<ItemClick> consumer) {
-        this.id = id;
-        this.name = name;
-        this.lore = lore;
-        this.itemStack = itemStack;
-        this.consumer = consumer;
-    }
-
-    public String id() {
-        return id;
-    }
-
-    public String name() {
-        return name;
-    }
-
-    public List<String> lore() {
-        return lore;
-    }
-
-    public int slot() {
-        return slot;
-    }
-
-    public ItemStack itemStack() {
-        return itemStack;
-    }
-
-    public Consumer<ItemClick> consumer() {
+    public Consumer<ItemClick> getConsumer() {
         return consumer;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) return true;
-        if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (GlobalItem) obj;
-        return Objects.equals(this.id, that.id) &&
-                Objects.equals(this.name, that.name) &&
-                Objects.equals(this.lore, that.lore) &&
-                this.slot == that.slot &&
-                Objects.equals(this.itemStack, that.itemStack) &&
-                Objects.equals(this.consumer, that.consumer);
+    public void setConsumer(Consumer<ItemClick> consumer) {
+        this.consumer = consumer;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, lore, slot, itemStack, consumer);
+    public String getId() {
+        return id;
     }
 
-    @Override
-    public String toString() {
-        return "GlobalItem[" +
-                "id=" + id + ", " +
-                "name=" + name + ", " +
-                "lore=" + lore + ", " +
-                "slot=" + slot + ", " +
-                "itemStack=" + itemStack + ", " +
-                "consumer=" + consumer + ']';
+    public ItemStack getItemStack() {
+        return itemStack;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setItemStack(ItemStack itemStack) {
+        this.itemStack = itemStack;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public List<String> getLore() {
+        return lore;
     }
 
     public void setLore(List<String> lore) {
         this.lore = lore;
     }
 
+    public @NotNull List<String> getLore(Player player) {
+        if (getReplacements() == null) {
+            return getLore();
+        }
+
+        Map<String, Object> replacements = getReplacements().apply(player);
+        List<String> lore = new ArrayList<>();
+        for (String line : getLore()) {
+            for (Map.Entry<String, Object> entry : replacements.entrySet()) {
+                line = line.replace(entry.getKey(), entry.getValue().toString());
+            }
+            lore.add(line);
+        }
+
+        return lore;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getName(Player player) {
+        if (getReplacements() == null) {
+            return getName();
+        }
+
+        Map<String, Object> replacements = getReplacements().apply(player);
+        String name = getName();
+        for (Map.Entry<String, Object> entry : replacements.entrySet()) {
+            name = name.replace(entry.getKey(), entry.getValue().toString());
+        }
+
+        return name;
+    }
+
+    public Function<Player, Map<String, Object>> getReplacements() {
+        return replacements;
+    }
+
+    public void setReplacements(Function<Player, Map<String, Object>> replacements) {
+        this.replacements = replacements;
+    }
+
+    public int getSlot() {
+        return slot;
+    }
+
     public void setSlot(int slot) {
         this.slot = slot;
     }
 
-    public void setItemStack(ItemStack itemStack) {
-        this.itemStack = itemStack;
+    @Contract(value = " -> new", pure = true)
+    @Override
+    public @NotNull GlobalItem clone() {
+        return new GlobalItem(id, name, lore, slot, itemStack, replacements, consumer);
+    }
+
+    @Override
+    public String toString() {
+        return "GlobalItem{" +
+                "consumer=" + consumer +
+                ", id='" + id + '\'' +
+                ", name='" + name + '\'' +
+                ", lore=" + lore +
+                ", slot=" + slot +
+                ", itemStack=" + itemStack +
+                ", replacements=" + replacements +
+                '}';
     }
 }

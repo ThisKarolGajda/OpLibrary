@@ -3,6 +3,7 @@ package me.opkarol.oplibrary.injection.inventories;
 import me.opkarol.oplibrary.injection.inventories.items.GlobalItem;
 import me.opkarol.oplibrary.injection.inventories.items.ItemClick;
 import me.opkarol.oplibrary.listeners.Listener;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.ClickType;
@@ -21,37 +22,37 @@ public class GlobalInventoryListener extends Listener {
             return;
         }
 
-        if (holder.clickEventConsumer() != null && Objects.equals(event.getClickedInventory(), event.getWhoClicked().getInventory())) {
-            holder.clickEventConsumer().accept(event);
+        if (holder.getClickEventConsumer() != null && Objects.equals(event.getClickedInventory(), event.getWhoClicked().getInventory())) {
+            holder.getClickEventConsumer().accept(event);
         } else {
             if (!(event.getClickedInventory().getHolder() instanceof GlobalInventoryHandler)) {
                 isIllegalClick(event);
                 return;
             }
 
-            if (holder.clickEventConsumer() != null) {
-                holder.clickEventConsumer().accept(event);
+            if (holder.getClickEventConsumer() != null) {
+                holder.getClickEventConsumer().accept(event);
             }
 
             if (isIllegalClick(event)) {
                 return;
             }
 
-            List<GlobalItem> items = holder.globalItemList();
+            List<GlobalItem> items = holder.getGlobalItemList();
             if (items == null) {
                 event.setCancelled(true);
                 event.setResult(Event.Result.DENY);
                 return;
             }
 
-            GlobalItem item = holder.get(event.getSlot());
+            GlobalItem item = holder.get((Player) event.getWhoClicked(), event.getSlot());
             if (item == null) {
                 event.setCancelled(true);
                 event.setResult(Event.Result.DENY);
                 return;
             }
 
-            item.consumer().accept(new ItemClick(event));
+            item.getConsumer().accept(new ItemClick(event));
         }
     }
 
@@ -71,8 +72,8 @@ public class GlobalInventoryListener extends Listener {
             return;
         }
 
-        if (holder.dragEventConsumer() != null) {
-            holder.dragEventConsumer().accept(event);
+        if (holder.getDragEventConsumer() != null) {
+            holder.getDragEventConsumer().accept(event);
         }
     }
 }

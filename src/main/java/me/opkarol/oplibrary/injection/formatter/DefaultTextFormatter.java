@@ -22,9 +22,13 @@ public class DefaultTextFormatter implements IFormatter {
     @Config
     public static ColorWrapper basicColor = new ColorWrapper(Color.GRAY);
     @Config
-    private static String startText = primaryColor.toCode() + "☁ " + basicColor.toCode();
+    private static String messageStartText = primaryColor.toCode() + "☁ " + basicColor.toCode();
     @Config
-    private static String replacementText = secondaryColor.toCode() + "%replace%" + basicColor.toCode();
+    private static String messageReplacementText = secondaryColor.toCode() + "%replace%" + basicColor.toCode();
+    @Config
+    private static String titleStartText = basicColor.toCode();
+    @Config
+    private static String itemNameStartText = primaryColor.toCode();
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%(.*?)%");
 
@@ -56,6 +60,21 @@ public class DefaultTextFormatter implements IFormatter {
         return formattedMessages;
     }
 
+    @Override
+    public String formatTitle(String input) {
+        return titleStartText + input;
+    }
+
+    @Override
+    public String formatItemName(String input) {
+        return itemNameStartText + input;
+    }
+
+    @Override
+    public List<String> formatItemLore(List<String> input) {
+        return input;
+    }
+
     private @NotNull String format(String input, Map<String, String> replacements) {
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(input);
         StringBuilder result = new StringBuilder();
@@ -63,11 +82,11 @@ public class DefaultTextFormatter implements IFormatter {
         while (matcher.find()) {
             String placeholder = matcher.group(1);
             String replacement = replacements != null ? replacements.getOrDefault(placeholder, placeholder) : placeholder;
-            matcher.appendReplacement(result, replacementText.replace("%replace%", "%" + replacement + "%"));
+            matcher.appendReplacement(result, messageReplacementText.replace("%replace%", "%" + replacement + "%"));
         }
         matcher.appendTail(result);
 
-        return startText + result;
+        return messageStartText + result;
     }
 
     private String replacePlaceholders(String input, @NotNull Map<String, String> replacements) {

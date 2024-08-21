@@ -23,7 +23,7 @@ public class ItemBuilder extends ItemStack implements Serializable, Cloneable {
     private final Map<String, String> tempReplacements = new HashMap<>();
 
     public ItemBuilder() {
-        super();
+        super(Material.STONE);
     }
 
     public ItemBuilder(@NotNull Material type) {

@@ -42,7 +42,6 @@ public class FileManager extends Helper {
 
     public <T> @NotNull T getValue(String key, T defaultType) {
         Object value = config.get(key);
-        System.out.println("key: " + key + " value: " + value);
         return (T) (value != null ? value : defaultType);
     }
 

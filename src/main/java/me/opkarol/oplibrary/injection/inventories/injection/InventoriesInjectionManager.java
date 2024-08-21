@@ -3,6 +3,7 @@ package me.opkarol.oplibrary.injection.inventories.injection;
 import me.opkarol.oplibrary.debug.PluginDebugger;
 import me.opkarol.oplibrary.injection.DependencyInjection;
 import me.opkarol.oplibrary.injection.Inject;
+import me.opkarol.oplibrary.injection.formatter.DefaultTextFormatter;
 import me.opkarol.oplibrary.injection.inventories.GlobalInventory;
 import me.opkarol.oplibrary.injection.inventories.items.GlobalItem;
 import me.opkarol.oplibrary.util.ClassFinder;
@@ -17,6 +18,8 @@ import java.util.Set;
 public class InventoriesInjectionManager {
     @Inject
     private static InventoriesManager inventoriesManager;
+    @Inject
+    private static DefaultTextFormatter textFormatter;
 
     @Inject
     public InventoriesInjectionManager() {
@@ -36,30 +39,32 @@ public class InventoriesInjectionManager {
                     try {
                         String id = field.getName();
                         GlobalInventory inventory = (GlobalInventory) field.get(null);
-                        String title = inventoriesManager.getTitle(id, inventory.getTitle());
+                        String title = inventoriesManager.getTitle(id, textFormatter.formatTitle(inventory.getTitle()));
                         inventory.setTitle(title);
                         inventoriesManager.setTitle(id, title);
                         debugger.debug("Setting title of " + id + " to " + title);
 
                         List<GlobalItem> items = new ArrayList<>();
                         for (GlobalItem item : inventory.getItems()) {
-                            String name = inventoriesManager.getItemName(id, item.id(), item.name());
-                            inventoriesManager.setItemName(id, item.id(), name);
-                            debugger.debug("Setting item name of " + item.id() + " to " + name);
+                            String name = inventoriesManager.getItemName(id, item.getId(), textFormatter.formatItemName(item.getName()));
+                            inventoriesManager.setItemName(id, item.getId(), name);
+                            debugger.debug("Setting item name of " + item.getId() + " to " + name);
 
-                            List<String> lore = inventoriesManager.getItemLore(id, item.id(), item.lore());
-                            inventoriesManager.setItemLore(id, item.id(), lore);
-                            debugger.debug("Setting lore of " + item.id() + " to " + lore);
+                            List<String> lore = inventoriesManager.getItemLore(id, item.getId(), textFormatter.formatItemLore(item.getLore()));
+                            inventoriesManager.setItemLore(id, item.getId(), lore);
+                            debugger.debug("Setting lore of " + item.getId() + " to " + lore);
 
-                            int slot = inventoriesManager.getItemSlot(id, item.id(), item.slot());
-                            inventoriesManager.setItemSlot(id, item.id(), slot);
-                            debugger.debug("Setting slot of " + item.id() + " to " + slot);
+                            int slot = inventoriesManager.getItemSlot(id, item.getId(), item.getSlot());
+                            if (slot != -1) {
+                                inventoriesManager.setItemSlot(id, item.getId(), slot);
+                                debugger.debug("Setting slot of " + item.getId() + " to " + slot);
+                            }
 
-                            ItemStack itemStack = inventoriesManager.getItemStack(id, item.id(), item.itemStack());
-                            inventoriesManager.setItemStack(id, item.id(), itemStack);
-                            debugger.debug("Setting item stack of " + item.id() + " to " + itemStack);
+                            ItemStack itemStack = inventoriesManager.getItemStack(id, item.getId(), item.getItemStack());
+                            inventoriesManager.setItemStack(id, item.getId(), itemStack);
+                            debugger.debug("Setting item stack of " + item.getId() + " to " + itemStack);
 
-                            items.add(new GlobalItem(id, name, lore, slot, itemStack, item.consumer()));
+                            items.add(new GlobalItem(id, name, lore, slot, itemStack, item.getReplacements(), item.getConsumer()));
                         }
                         inventory.setItems(items);
 
@@ -72,20 +77,20 @@ public class InventoriesInjectionManager {
                     try {
                         String id = "common";
                         GlobalItem item = (GlobalItem) field.get(null);
-                        String name = inventoriesManager.getItemName(id, item.id(), item.name());
-                        inventoriesManager.setItemName(id, item.id(), name);
+                        String name = inventoriesManager.getItemName(id, item.getId(), item.getName());
+                        inventoriesManager.setItemName(id, item.getId(), name);
                         item.setName(name);
-                        debugger.debug("Setting item name of " + item.id() + " to " + name);
+                        debugger.debug("Setting item name of " + item.getId() + " to " + name);
 
-                        List<String> lore = inventoriesManager.getItemLore(id, item.id(), item.lore());
-                        inventoriesManager.setItemLore(id, item.id(), lore);
+                        List<String> lore = inventoriesManager.getItemLore(id, item.getId(), item.getLore());
+                        inventoriesManager.setItemLore(id, item.getId(), lore);
                         item.setLore(lore);
-                        debugger.debug("Setting lore of " + item.id() + " to " + lore);
+                        debugger.debug("Setting lore of " + item.getId() + " to " + lore);
 
-                        ItemStack itemStack = inventoriesManager.getItemStack(id, item.id(), item.itemStack());
-                        inventoriesManager.setItemStack(id, item.id(), itemStack);
+                        ItemStack itemStack = inventoriesManager.getItemStack(id, item.getId(), item.getItemStack());
+                        inventoriesManager.setItemStack(id, item.getId(), itemStack);
                         item.setItemStack(itemStack);
-                        debugger.debug("Setting item stack of " + item.id() + " to " + itemStack);
+                        debugger.debug("Setting item stack of " + item.getId() + " to " + itemStack);
 
                         field.set(null, item);
                     } catch (IllegalAccessException ignored) {

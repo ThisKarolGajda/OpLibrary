@@ -12,4 +12,10 @@ public interface IFormatter {
     List<String> formatMessages(List<String> inputs);
 
     List<String> formatMessages(List<String> inputs, Map<String, String> replacements);
+
+    String formatTitle(String input);
+
+    String formatItemName(String input);
+
+    List<String> formatItemLore(List<String> input);
 }
