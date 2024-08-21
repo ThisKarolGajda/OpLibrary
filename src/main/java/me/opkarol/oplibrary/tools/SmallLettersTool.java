@@ -1,10 +1,12 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreInject
 public class SmallLettersTool {
     private static final Map<Character, Character> SMALL_LETTER_MAP = new HashMap<>();
     //private static final Map<Character, String> SMALL_LETTER_MAP_STRING = new HashMap<>();

@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.listeners;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.tools.FormatTool;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
@@ -12,13 +13,26 @@ import java.util.*;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class ChatHandler extends BasicListener {
-    private final Map<UUID, Queue<Consumer<String>>> handlers = new HashMap<>();
     private static ChatHandler chatHandler;
+    private final Map<UUID, Queue<Consumer<String>>> handlers = new HashMap<>();
 
     public ChatHandler() {
         chatHandler = this;
         runListener();
+    }
+
+    public static void add(UUID uuid, Consumer<String> consumer) {
+        getInstance().addHandler(uuid, consumer);
+    }
+
+    public static void add(@NotNull HumanEntity humanEntity, Consumer<String> consumer) {
+        getInstance().addHandler(humanEntity.getUniqueId(), consumer);
+    }
+
+    public static ChatHandler getInstance() {
+        return chatHandler == null ? new ChatHandler() : chatHandler;
     }
 
     @EventHandler
@@ -40,14 +54,6 @@ public class ChatHandler extends BasicListener {
         handlers.put(uuid, queue);
     }
 
-    public static void add(UUID uuid, Consumer<String> consumer) {
-        getInstance().addHandler(uuid, consumer);
-    }
-
-    public static void add(@NotNull HumanEntity humanEntity, Consumer<String> consumer) {
-        getInstance().addHandler(humanEntity.getUniqueId(), consumer);
-    }
-
     public void addHandlerWithPlayerConsumer(UUID uuid, Consumer<String> consumer, @NotNull Consumer<Player> playerConsumer) {
         addHandler(uuid, consumer);
         playerConsumer.accept(Bukkit.getPlayer(uuid));
@@ -59,10 +65,6 @@ public class ChatHandler extends BasicListener {
 
     public void removeHandler(UUID uuid) {
         handlers.remove(uuid);
-    }
-
-    public static ChatHandler getInstance() {
-        return chatHandler == null ? new ChatHandler() : chatHandler;
     }
 
     @SafeVarargs

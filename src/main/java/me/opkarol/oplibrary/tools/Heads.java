@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.inventories.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class Heads {
 
     public static ItemBuilder get(String minecraftUrlValue) {

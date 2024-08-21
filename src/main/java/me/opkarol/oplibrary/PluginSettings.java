@@ -10,5 +10,6 @@ public interface PluginSettings {
      *
      * @return integer BStats service id
      */
-    @Nullable Integer registerBStatsOnStartup();
+    @Nullable
+    Integer registerBStatsOnStartup();
 }

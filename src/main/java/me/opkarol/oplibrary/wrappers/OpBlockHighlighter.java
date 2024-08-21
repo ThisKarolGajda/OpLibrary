@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.wrappers;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.runnable.OpTimerRunnable;
 import org.bukkit.Location;
 import org.bukkit.Particle;
@@ -11,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+@IgnoreInject
 public class OpBlockHighlighter {
     private final Block block;
     private final Particle particle;
@@ -22,28 +24,6 @@ public class OpBlockHighlighter {
     public OpBlockHighlighter(Block block, Particle particle) {
         this.block = block;
         this.particle = particle;
-    }
-
-    public void highlightFor(Player player) {
-        if (block.isEmpty()) {
-            return;
-        }
-
-        List<Location> locations = getHollowCubeLocations(block.getLocation());
-        for (Location location : locations) {
-            new OpParticle(particle).setLocation(location).display(player);
-        }
-    }
-
-    public void highlightFor(Player player, int seconds) {
-        new OpTimerRunnable((r) -> {
-            if (block.isEmpty()) {
-                r.cancelTask();
-                return;
-            }
-
-            highlightFor(player);
-        }, seconds);
     }
 
     private static @NotNull List<Location> getHollowCubeLocations(@NotNull Location location) {
@@ -72,5 +52,27 @@ public class OpBlockHighlighter {
         }
 
         return result;
+    }
+
+    public void highlightFor(Player player) {
+        if (block.isEmpty()) {
+            return;
+        }
+
+        List<Location> locations = getHollowCubeLocations(block.getLocation());
+        for (Location location : locations) {
+            new OpParticle(particle).setLocation(location).display(player);
+        }
+    }
+
+    public void highlightFor(Player player, int seconds) {
+        new OpTimerRunnable((r) -> {
+            if (block.isEmpty()) {
+                r.cancelTask();
+                return;
+            }
+
+            highlightFor(player);
+        }, seconds);
     }
 }

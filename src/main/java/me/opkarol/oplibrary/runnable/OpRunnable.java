@@ -1,6 +1,7 @@
 package me.opkarol.oplibrary.runnable;
 
 import me.opkarol.oplibrary.Plugin;
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.Bukkit;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -9,9 +10,10 @@ import java.io.Serializable;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class OpRunnable implements Serializable {
-    private int taskId;
     private final BukkitRunnable bukkitRunnable;
+    private int taskId;
 
     public OpRunnable(Consumer<OpRunnable> consumer) {
         bukkitRunnable = new BukkitRunnable() {

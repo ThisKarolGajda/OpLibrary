@@ -1,20 +1,28 @@
 package me.opkarol.oplibrary.wrappers;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.tools.FormatTool;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
-public class OpTitle {
+@IgnoreInject
+@SerializableAs("OpTitle")
+public class OpTitle implements Serializable, ConfigurationSerializable {
     private String title;
     private String subtitle;
-    private String tempTitle;
-    private String tempSubTitle;
+    private transient String tempTitle;
+    private transient String tempSubTitle;
     private int fadeIn, fadeOut, stay;
-    private List<Player> receivers;
+    private transient List<Player> receivers;
 
     public OpTitle(String title, String subTitle, int fadeIn, int stay, int fadeOut) {
         this.title = title;
@@ -28,11 +36,6 @@ public class OpTitle {
         this.title = title;
         this.fadeIn = fadeIn;
         this.fadeOut = fadeOut;
-        this.stay = stay;
-    }
-
-    public OpTitle(String title, int stay) {
-        this.title = title;
         this.stay = stay;
     }
 
@@ -149,5 +152,26 @@ public class OpTitle {
                 ", stay=" + stay +
                 ", receivers=" + receivers +
                 '}';
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("title", title);
+        map.put("subtitle", subtitle);
+        map.put("fadeIn", fadeIn);
+        map.put("stay", stay);
+        map.put("fadeOut", fadeOut);
+        return map;
+    }
+
+    public static @NotNull OpTitle deserialize(@NotNull Map<String, Object> map) {
+        OpTitle opTitle = new OpTitle();
+        opTitle.setTitle((String) map.get("title"));
+        opTitle.setSubtitle((String) map.get("subtitle"));
+        opTitle.setFadeIn((int) map.get("fadeIn"));
+        opTitle.setStay((int) map.get("stay"));
+        opTitle.setFadeOut((int) map.get("fadeOut"));
+        return opTitle;
     }
 }

@@ -15,11 +15,11 @@ import static me.opkarol.oplibrary.gson.GsonBuilder.gson;
 
 @SuppressWarnings("all")
 public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>> extends AbstractDatabase<PK, T> {
-    private Map<PK, T> cache;
     private final ConfigurationFile file;
     private final Class<T[]> classArray;
     private final Class<T> clazz;
     private final String fileName;
+    private Map<PK, T> cache;
 
     public JSONDatabase(String fileName, Class<T> clazz, Class<T[]> classArray, boolean useMultiFiles) {
         this.classArray = classArray;

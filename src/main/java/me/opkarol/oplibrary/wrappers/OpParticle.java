@@ -1,29 +1,50 @@
 package me.opkarol.oplibrary.wrappers;
 
-import me.opkarol.oplibrary.location.OpSerializableLocation;
-import me.opkarol.oplibrary.location.StringUtil;
+import me.opkarol.oplibrary.injection.IgnoreInject;
+import me.opkarol.oplibrary.location.OpLocation;
+import me.opkarol.oplibrary.misc.StringUtil;
 import me.opkarol.oplibrary.runnable.OpRunnable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
-public class OpParticle {
+@IgnoreInject
+@SerializableAs("OpParticle")
+public class OpParticle implements Serializable, ConfigurationSerializable {
     private float offsetX, offsetY, offsetZ;
     private int amount;
     private Particle particle;
-    private OpSerializableLocation location;
-    private List<Player> receivers;
-    private OpRunnable animatedTask;
+    private transient OpLocation location;
+    private transient List<Player> receivers;
+    private transient OpRunnable animatedTask;
 
     public OpParticle(Particle particle) {
+        this.particle = particle;
+    }
+
+    public OpParticle(Particle particle, int amount) {
+        this.particle = particle;
+        this.amount = amount;
+    }
+
+    public OpParticle(Particle particle, float offsetX, float offsetY, float offsetZ, int amount) {
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+        this.offsetZ = offsetZ;
+        this.amount = amount;
         this.particle = particle;
     }
 
@@ -105,17 +126,17 @@ public class OpParticle {
         return this;
     }
 
-    public OpSerializableLocation getLocation() {
+    public OpLocation getLocation() {
         return location;
     }
 
-    public OpParticle setLocation(OpSerializableLocation opLocation) {
+    public OpParticle setLocation(OpLocation opLocation) {
         this.location = opLocation;
         return this;
     }
 
     public OpParticle setLocation(Location location) {
-        this.location = new OpSerializableLocation(location);
+        this.location = new OpLocation(location);
         return this;
     }
 
@@ -222,5 +243,26 @@ public class OpParticle {
                 ", receivers=" + receivers +
                 ", animatedTask=" + animatedTask +
                 '}';
+    }
+
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("offsetX", offsetX);
+        map.put("offsetY", offsetY);
+        map.put("offsetZ", offsetZ);
+        map.put("amount", amount);
+        map.put("particle", particle.name());
+        return map;
+    }
+
+    public static @NotNull OpParticle deserialize(@NotNull Map<String, Object> map) {
+        OpParticle opParticle = new OpParticle();
+        opParticle.setOffsetX(((Number) map.get("offsetX")).floatValue());
+        opParticle.setOffsetY(((Number) map.get("offsetY")).floatValue());
+        opParticle.setOffsetZ(((Number) map.get("offsetZ")).floatValue());
+        opParticle.setAmount(((Number) map.get("amount")).intValue());
+        opParticle.setParticle(Particle.valueOf((String) map.get("particle")));
+        return opParticle;
     }
 }

@@ -1,9 +1,12 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
+
 import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public enum DefaultFontInfo {
     A('A', 5),
     a('a', 5),

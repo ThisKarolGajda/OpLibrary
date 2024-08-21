@@ -1,23 +1,31 @@
 package me.opkarol.oplibrary.wrappers;
 
-import me.opkarol.oplibrary.location.OpSerializableLocation;
-import me.opkarol.oplibrary.location.StringUtil;
+import me.opkarol.oplibrary.injection.IgnoreInject;
+import me.opkarol.oplibrary.location.OpLocation;
+import me.opkarol.oplibrary.misc.StringUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
-public class OpSound {
+@IgnoreInject
+@SerializableAs("OpSound")
+public class OpSound implements Serializable, ConfigurationSerializable {
     private double volume = 1, pitch = 1;
     private Sound sound;
     private SoundCategory category;
-    private List<Player> receivers;
-    private OpSerializableLocation location;
+    private transient List<Player> receivers;
+    private transient OpLocation location;
 
     public OpSound(Sound sound) {
         this.sound = sound;
@@ -52,10 +60,10 @@ public class OpSound {
     }
 
     public OpSound play(Location location) {
-        return play(new OpSerializableLocation(location));
+        return play(new OpLocation(location));
     }
 
-    public OpSound play(OpSerializableLocation location) {
+    public OpSound play(OpLocation location) {
         if (receivers == null) {
             Bukkit.getOnlinePlayers().forEach(player -> play(player, location.getLocation()));
             return this;
@@ -95,17 +103,17 @@ public class OpSound {
         return this;
     }
 
-    public OpSerializableLocation getLocation() {
+    public OpLocation getLocation() {
         return location;
     }
 
-    public OpSound setLocation(OpSerializableLocation location) {
+    public OpSound setLocation(OpLocation location) {
         this.location = location;
         return this;
     }
 
     public OpSound setLocation(Location location) {
-        this.location = new OpSerializableLocation(location);
+        this.location = new OpLocation(location);
         return this;
     }
 
@@ -130,5 +138,32 @@ public class OpSound {
                 ", receivers=" + receivers +
                 ", location=" + location +
                 '}';
+    }
+
+    @Override
+    public Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("sound", sound != null ? sound.name() : null);
+        map.put("category", category != null ? category.name() : null);
+        map.put("volume", volume);
+        map.put("pitch", pitch);
+        map.put("location", location);
+        return map;
+    }
+
+    public static @NotNull OpSound deserialize(@NotNull Map<String, Object> map) {
+        OpSound opSound = new OpSound();
+        String soundName = (String) map.get("sound");
+        if (soundName != null) {
+            opSound.setSound(Sound.valueOf(soundName));
+        }
+        String categoryName = (String) map.get("category");
+        if (categoryName != null) {
+            opSound.setCategory(SoundCategory.valueOf(categoryName));
+        }
+        opSound.setVolume((double) map.get("volume"));
+        opSound.setPitch((double) map.get("pitch"));
+        opSound.setLocation((OpLocation) map.get("location"));
+        return opSound;
     }
 }

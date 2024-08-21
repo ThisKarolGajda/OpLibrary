@@ -1,6 +1,7 @@
 package me.opkarol.oplibrary.extensions;
 
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.function.BiFunction;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class PlaceholderAPI {
     private static PlaceholderAPI placeholderAPI;
     private final boolean enabled;

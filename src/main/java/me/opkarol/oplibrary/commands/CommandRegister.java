@@ -1,10 +1,12 @@
 package me.opkarol.oplibrary.commands;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@IgnoreInject
 public class CommandRegister {
     private final List<Command> commandList = new ArrayList<>();
 

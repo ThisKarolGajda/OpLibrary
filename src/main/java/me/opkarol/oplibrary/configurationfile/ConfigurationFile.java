@@ -1,8 +1,9 @@
 package me.opkarol.oplibrary.configurationfile;
 
 import com.tchristofferson.configupdater.ConfigUpdater;
-import me.opkarol.oplibrary.location.OpSerializableLocation;
-import me.opkarol.oplibrary.location.StringUtil;
+import me.opkarol.oplibrary.injection.IgnoreInject;
+import me.opkarol.oplibrary.location.OpLocation;
+import me.opkarol.oplibrary.misc.StringUtil;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -19,13 +20,14 @@ import java.util.function.Consumer;
  * The ConfigurationFile class facilitates the management of plugin configuration files in Bukkit/Spigot projects.
  */
 @SuppressWarnings("all")
+@IgnoreInject
 public class ConfigurationFile implements IConfigurationFileHelper {
 
     private final File file;
     private final Plugin plugin;
     private final String fileName;
-    private FileConfiguration fileConfiguration;
     private final Map<String, Object> cache = new HashMap<>();
+    private FileConfiguration fileConfiguration;
 
     /**
      * Constructor for the ConfigurationFile class.
@@ -204,8 +206,8 @@ public class ConfigurationFile implements IConfigurationFileHelper {
         return StringUtil.getFloat(get(path));
     }
 
-    public OpSerializableLocation getLocation(String path) {
-        return new OpSerializableLocation(getString(path));
+    public OpLocation getLocation(String path) {
+        return new OpLocation(getString(path));
     }
 
     public <K extends Enum<K>> Optional<K> getEnum(String path, Class<K> enumType) {

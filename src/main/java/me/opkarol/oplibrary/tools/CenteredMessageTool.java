@@ -1,8 +1,10 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
+@IgnoreInject
 public class CenteredMessageTool {
     private final static int CENTER_PX = 154;
 

@@ -1,11 +1,13 @@
 package me.opkarol.oplibrary.extensions;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.plugin.RegisteredServiceProvider;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class Vault {
     private static Vault vault;
     private boolean enabled;
@@ -21,6 +23,18 @@ public class Vault {
 
     public static Vault getInstance() {
         return vault == null ? new Vault() : vault;
+    }
+
+    public static VAULT_RETURN_INFO remove(OfflinePlayer player, double amount) {
+        return getInstance().withdraw(player, amount);
+    }
+
+    public static VAULT_RETURN_INFO add(OfflinePlayer player, double amount) {
+        return getInstance().deposit(player, amount);
+    }
+
+    public static double getBalance(OfflinePlayer player) {
+        return getInstance().get(player);
     }
 
     public boolean isEnabled() {
@@ -76,17 +90,5 @@ public class Vault {
 
     public enum VAULT_RETURN_INFO {
         PLUGIN_NOT_ENABLED, WITHDRAW_SUCCESSFUL, WITHDRAW_NOT_SUCCESSFUL, WITHDRAW_TOO_BROKE, DEPOSIT_SUCCESSFUL, DEPOSIT_NOT_SUCCESSFUL
-    }
-
-    public static VAULT_RETURN_INFO remove(OfflinePlayer player, double amount) {
-        return getInstance().withdraw(player, amount);
-    }
-
-    public static VAULT_RETURN_INFO add(OfflinePlayer player, double amount) {
-        return getInstance().deposit(player, amount);
-    }
-
-    public static double getBalance(OfflinePlayer player) {
-        return getInstance().get(player);
     }
 }

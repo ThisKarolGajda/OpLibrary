@@ -1,9 +1,11 @@
 package me.opkarol.oplibrary.configurationfile;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 
+@IgnoreInject
 public interface IConfigurationFile {
 
     void createConfig();

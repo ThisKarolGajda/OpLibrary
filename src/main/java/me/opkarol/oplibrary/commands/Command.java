@@ -2,6 +2,8 @@ package me.opkarol.oplibrary.commands;
 
 import me.opkarol.oplibrary.Plugin;
 import me.opkarol.oplibrary.commands.annotations.*;
+import me.opkarol.oplibrary.debug.PluginDebugger;
+import me.opkarol.oplibrary.injection.messages.StringMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandMap;
@@ -17,20 +19,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
-import static me.opkarol.oplibrary.translations.Messages.sendMessage;
-
 public class Command extends BukkitCommand {
     private final Object classObject;
     private final Map<String, Method> subCommands = new HashMap<>();
-    private Method commandMethod;
     private final Map<UUID, Long> cooldownMap = new HashMap<>();
+    private Method commandMethod;
     private Method noUseMethod;
 
-    public Command(Class<?> clazz) {
+    private static final StringMessage YOU_DONT_HAVE_PERMISSION = new StringMessage("You don't have permission to use this command");
+    private static final StringMessage YOU_ARE_ON_COOLDOWN = new StringMessage("You need to wait before trying again");
+
+    public Command(@NotNull Class<?> clazz) {
         super(clazz.getAnnotation(me.opkarol.oplibrary.commands.annotations.Command.class).value());
         try {
             this.classObject = clazz.getDeclaredConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                 InvocationTargetException e) {
             throw new RuntimeException(e);
         }
 
@@ -64,19 +68,7 @@ public class Command extends BukkitCommand {
             }
         } catch (Exception e) {
             unregister();
-            Field bukkitCommandMap;
-            try {
-                bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
-            } catch (NoSuchFieldException ex) {
-                throw new RuntimeException(ex);
-            }
-            bukkitCommandMap.setAccessible(true);
-            CommandMap commandMap;
-            try {
-                commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
-            } catch (IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            CommandMap commandMap = simpleRegister();
             org.bukkit.command.Command command = commandMap.getCommand(this.getName());
             if (command == null || !command.isRegistered()) {
                 commandMap.register(getName(), Plugin.getInstance().getName(), this);
@@ -84,6 +76,23 @@ public class Command extends BukkitCommand {
                 throw new IllegalStateException("This command is already registered.");
             }
         }
+    }
+
+    private static CommandMap simpleRegister() {
+        Field bukkitCommandMap;
+        try {
+            bukkitCommandMap = Bukkit.getServer().getClass().getDeclaredField("commandMap");
+        } catch (NoSuchFieldException ex) {
+            throw new RuntimeException(ex);
+        }
+        bukkitCommandMap.setAccessible(true);
+        CommandMap commandMap;
+        try {
+            commandMap = (CommandMap) bukkitCommandMap.get(Bukkit.getServer());
+        } catch (IllegalAccessException ex) {
+            throw new RuntimeException(ex);
+        }
+        return commandMap;
     }
 
     @SuppressWarnings("unchecked")
@@ -109,7 +118,7 @@ public class Command extends BukkitCommand {
         // Check permission for the entire command class
         Permission classPermission = classObject.getClass().getAnnotation(Permission.class);
         if (!hasPermission(player, classPermission)) {
-            sendMessage("commands.no_permission", player);
+            YOU_DONT_HAVE_PERMISSION.send(player);
             return false;
         }
 
@@ -185,13 +194,13 @@ public class Command extends BukkitCommand {
     private boolean executeMethodWithDynamicParameters(Player player, @NotNull Method method, String[] args, int splitLength) {
         Permission subcommandPermission = method.getAnnotation(Permission.class);
         if (subcommandPermission != null && !hasPermission(player, subcommandPermission)) {
-            sendMessage("commands.no_permission", player);
+            YOU_DONT_HAVE_PERMISSION.send(player);
             return true;
         }
 
         // Check cooldown for the subcommand
-        if (!checkAndUseCooldown(player, method)) {
-            sendMessage("commands.on_cooldown", player);
+        if (canNotUseCooldown(player, method)) {
+            YOU_ARE_ON_COOLDOWN.send(player);
             return true;
         }
 
@@ -220,7 +229,7 @@ public class Command extends BukkitCommand {
             try {
                 method.invoke(classObject, player, Bukkit.getOfflinePlayer(args[splitLength]), args[splitLength + 1]);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+                Plugin.get(PluginDebugger.class).debug("Cannot execute");
             }
             return true;
         }
@@ -232,13 +241,13 @@ public class Command extends BukkitCommand {
     private boolean executeMethod(Player player, @NotNull Method method) {
         Permission subcommandPermission = method.getAnnotation(Permission.class);
         if (subcommandPermission != null && !hasPermission(player, subcommandPermission)) {
-            sendMessage("commands.no_permission", player);
+            YOU_DONT_HAVE_PERMISSION.send(player);
             return true;
         }
 
         // Check cooldown for the subcommand
-        if (!checkAndUseCooldown(player, method)) {
-            sendMessage("commands.on_cooldown", player);
+        if (canNotUseCooldown(player, method)) {
+            YOU_ARE_ON_COOLDOWN.send(player);
             return true;
         }
 
@@ -247,7 +256,7 @@ public class Command extends BukkitCommand {
             try {
                 method.invoke(classObject, player);
             } catch (IllegalAccessException | InvocationTargetException e) {
-                e.printStackTrace();
+                Plugin.get(PluginDebugger.class).debug("Cannot invoke method " + method.getName() + " on player " + player.getName());
             }
             return true;
         } else {
@@ -333,16 +342,16 @@ public class Command extends BukkitCommand {
         return matchingSubcommands;
     }
 
-    private boolean checkAndUseCooldown(@NotNull Player player, Method method) {
+    private boolean canNotUseCooldown(@NotNull Player player, Method method) {
         long cooldown = getCooldown(player.getUniqueId(), method);
         long currentTime = System.currentTimeMillis();
         if (currentTime - cooldown >= 0) {
             // The cooldown has expired; reset it
             setCooldown(player.getUniqueId(), method, currentTime + getCooldownDuration(method));
-            return true;
+            return false;
         } else {
             // The player is still on cooldown
-            return false;
+            return true;
         }
     }
 

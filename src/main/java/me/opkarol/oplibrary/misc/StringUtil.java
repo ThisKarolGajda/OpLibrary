@@ -1,5 +1,6 @@
-package me.opkarol.oplibrary.location;
+package me.opkarol.oplibrary.misc;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 
@@ -8,6 +9,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@IgnoreInject
+@SuppressWarnings("unused")
 public class StringUtil {
 
     public static int getIntFromString(String s) {
@@ -15,7 +18,7 @@ public class StringUtil {
             try {
                 return Optional.of(s.replaceAll("\\s+", "")
                                 .replaceAll("[^-0-9]", ""))
-                        .filter(s1 -> s1.length() > 0)
+                        .filter(s1 -> !s1.isEmpty())
                         .map(Integer::parseInt)
                         .orElse(-1);
             } catch (NumberFormatException ignore) {
@@ -30,7 +33,7 @@ public class StringUtil {
             try {
                 return Optional.of(s.replaceAll("\\s+", "")
                                 .replaceAll("[^-.,0-9]", ""))
-                        .filter(s1 -> s1.length() > 0)
+                        .filter(s1 -> !s1.isEmpty())
                         .map(Double::parseDouble).orElse(-1D);
             } catch (NumberFormatException ignore) {
                 return -1D;
@@ -48,7 +51,7 @@ public class StringUtil {
 
                 return Optional.of(s.replaceAll("\\s+", "")
                                 .replaceAll("[^-.e,0-9]", ""))
-                        .filter(s1 -> s1.length() > 0)
+                        .filter(s1 -> !s1.isEmpty())
                         .map(Float::parseFloat).orElse(-1F);
             } catch (NumberFormatException ignore) {
                 return -1F;

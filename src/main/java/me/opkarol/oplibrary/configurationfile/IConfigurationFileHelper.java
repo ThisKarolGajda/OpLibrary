@@ -1,11 +1,13 @@
 package me.opkarol.oplibrary.configurationfile;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 
+@IgnoreInject
 public interface IConfigurationFileHelper extends IConfigurationFile {
     default Optional<ConfigurationSection> getConfigurationSection(String path) {
         if (getFileConfiguration() == null) {

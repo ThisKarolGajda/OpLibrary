@@ -1,30 +1,11 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
+
+@IgnoreInject
 public class TimeUtils {
     public static long getCurrent() {
         return System.currentTimeMillis();
-    }
-
-    public enum TimeUnit {
-        SECOND(1000),
-        MINUTE(60000),
-        HOUR(3600000),
-        DAY(86400000),
-        WEEK(604800000);
-
-        private final long milliseconds;
-
-        TimeUnit(long milliseconds) {
-            this.milliseconds = milliseconds;
-        }
-
-        public long toMilliseconds() {
-            return milliseconds;
-        }
-
-        public long toSeconds() {
-            return milliseconds / 1000;
-        }
     }
 
     public static long addToTimestamp(long timestamp, long value, TimeUnit unit) {
@@ -51,5 +32,27 @@ public class TimeUtils {
         long timeToPass = value * unit.toMilliseconds();
         long currentTimeMillis = System.currentTimeMillis();
         return currentTimeMillis > timestamp - timeToPass;
+    }
+
+    public enum TimeUnit {
+        SECOND(1000),
+        MINUTE(60000),
+        HOUR(3600000),
+        DAY(86400000),
+        WEEK(604800000);
+
+        private final long milliseconds;
+
+        TimeUnit(long milliseconds) {
+            this.milliseconds = milliseconds;
+        }
+
+        public long toMilliseconds() {
+            return milliseconds;
+        }
+
+        public long toSeconds() {
+            return milliseconds / 1000;
+        }
     }
 }

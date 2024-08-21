@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.misc;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.inventories.ItemBuilder;
 import me.opkarol.oplibrary.tools.HeadManager;
 import me.opkarol.oplibrary.tools.MathUtils;
@@ -10,8 +11,10 @@ import java.util.Map;
 import java.util.Objects;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class Books {
     private final static Map<String, ItemBuilder> BOOKS = new HashMap<>();
+
     static {
         BOOKS.put("1d111a029754d5d2681b65ade843b721d0a814a80dc16a38ea04cae61913ae20", null);
         BOOKS.put("c2ebbdb18d747281b5462f857ee984675a39d5a0274446a22f66264a53d2b034", null);

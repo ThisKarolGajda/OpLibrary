@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
+import me.opkarol.oplibrary.injection.IgnoreInject;
 
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+@IgnoreInject
 public class GsonBuilder {
     public static Gson gson;
 

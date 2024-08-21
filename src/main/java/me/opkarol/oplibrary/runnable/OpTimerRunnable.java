@@ -1,9 +1,12 @@
 package me.opkarol.oplibrary.runnable;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
+
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class OpTimerRunnable {
 
     public OpTimerRunnable() {

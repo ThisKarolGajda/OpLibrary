@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,14 +10,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class FormatTool {
-    private static final Pattern HEX_PATTERN = Pattern.compile("#<[A-f0-9]{6}>");
-    private static final Pattern BOLD_HEX_PATTERN = Pattern.compile("&l#<[A-f0-9]{6}>");
-
-    private static final char COLOR_CHAR = '§';
     public static final String CENTER_PREFIX = "<CEN>";
     public static final String SMALL_LETTERS_PREFIX = "<SL>";
     public static final String HIGH_LETTERS_PREFIX = "<H>";
+    private static final Pattern HEX_PATTERN = Pattern.compile("#<[A-f0-9]{6}>");
+    private static final Pattern BOLD_HEX_PATTERN = Pattern.compile("&l#<[A-f0-9]{6}>");
+    private static final char COLOR_CHAR = '§';
 
     public static @NotNull String formatMessage(String message) {
         try {

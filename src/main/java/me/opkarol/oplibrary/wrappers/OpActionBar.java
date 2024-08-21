@@ -1,21 +1,28 @@
 package me.opkarol.oplibrary.wrappers;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.runnable.OpRunnable;
 import me.opkarol.oplibrary.tools.OpComponent;
 import net.md_5.bungee.api.ChatMessageType;
+import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.SerializableAs;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unsued")
-public class OpActionBar implements Serializable {
+@IgnoreInject
+@SerializableAs("OpActionBar")
+public class OpActionBar implements Serializable, ConfigurationSerializable {
     private String text;
-    private OpComponent actionBar;
-    private List<Player> receivers;
-    private OpRunnable runnable;
+    private transient OpComponent actionBar;
+    private transient List<Player> receivers;
+    private transient OpRunnable runnable;
 
     public OpActionBar(OpComponent actionBar) {
         this.actionBar = actionBar;
@@ -120,4 +127,15 @@ public class OpActionBar implements Serializable {
         return build(text);
     }
 
+    @Override
+    public @NotNull Map<String, Object> serialize() {
+        Map<String, Object> map = new HashMap<>();
+        map.put("text", text);
+        return map;
+    }
+
+    public static @NotNull OpActionBar deserialize(@NotNull Map<String, Object> map) {
+        String text = (String) map.get("text");
+        return new OpActionBar(text);
+    }
 }

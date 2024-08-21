@@ -2,6 +2,7 @@ package me.opkarol.oplibrary.tools;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import me.opkarol.oplibrary.inventories.ItemBuilder;
 import me.opkarol.oplibrary.runnable.OpRunnable;
 import org.bukkit.Bukkit;
@@ -25,6 +26,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public class HeadManager {
     private static final Map<UUID, String> HEAD_CACHE = new HashMap<>();
     private static final Map<String, ItemStack> HEAD_CACHE_MINECRAFT_VALUE = new HashMap<>();

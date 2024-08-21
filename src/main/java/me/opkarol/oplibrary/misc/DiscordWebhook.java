@@ -1,5 +1,7 @@
 package me.opkarol.oplibrary.misc;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
+
 import javax.net.ssl.HttpsURLConnection;
 import java.awt.*;
 import java.io.IOException;
@@ -15,6 +17,7 @@ import java.util.*;
  * Come from: <a href="https://gist.github.com/k3kdude/fba6f6b37594eae3d6f9475330733bdb">k3kdude/DiscordWebhook.java</a>
  */
 @SuppressWarnings("unused")
+@IgnoreInject
 public class DiscordWebhook {
 
     private final String url;
@@ -160,6 +163,7 @@ public class DiscordWebhook {
         connection.disconnect();
     }
 
+    @IgnoreInject
     public static class EmbedObject {
         private final List<Field> fields = new ArrayList<>();
         private String title;
@@ -268,6 +272,7 @@ public class DiscordWebhook {
         }
     }
 
+    @IgnoreInject
     private static class JSONObject {
 
         private final HashMap<String, Object> map = new HashMap<>();

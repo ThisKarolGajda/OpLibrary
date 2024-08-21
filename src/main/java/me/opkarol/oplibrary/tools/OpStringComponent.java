@@ -1,6 +1,7 @@
 package me.opkarol.oplibrary.tools;
 
-import me.opkarol.oplibrary.location.StringUtil;
+import me.opkarol.oplibrary.injection.IgnoreInject;
+import me.opkarol.oplibrary.misc.StringUtil;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -14,6 +15,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
+@IgnoreInject
 public record OpStringComponent(String string) {
 
     /**

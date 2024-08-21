@@ -1,10 +1,12 @@
 package me.opkarol.oplibrary.misc;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.Serializable;
 
+@IgnoreInject
 public record Tuple<A, B>(A first, B second) implements Serializable {
 
     @Contract("_, _ -> new")

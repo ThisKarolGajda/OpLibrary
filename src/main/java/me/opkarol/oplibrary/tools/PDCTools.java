@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.tools;
 
+import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
+@IgnoreInject
 public final class PDCTools {
 
     public static @Nullable String getNBT(@NotNull ItemStack item, NamespacedKey key) {
