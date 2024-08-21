@@ -3,7 +3,6 @@ package me.opkarol.oplibrary.database;
 import me.opkarol.oplibrary.Plugin;
 import me.opkarol.oplibrary.configurationfile.ConfigurationFile;
 import me.opkarol.oplibrary.database.manager.AbstractDatabase;
-import me.opkarol.oporm.DatabaseEntity;
 
 import java.io.*;
 import java.util.ArrayList;

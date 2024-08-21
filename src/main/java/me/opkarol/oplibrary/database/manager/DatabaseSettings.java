@@ -6,8 +6,6 @@ public record DatabaseSettings(DatabaseSettings.Type type,
                                Map<String, Object> objects) {
 
     public enum Type {
-        FLAT,
-        SQL,
         JSON,
     }
 }

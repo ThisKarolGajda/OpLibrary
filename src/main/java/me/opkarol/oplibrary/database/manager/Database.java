@@ -1,5 +1,6 @@
 package me.opkarol.oplibrary.database.manager;
 
+import me.opkarol.oplibrary.database.DatabaseEntity;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -10,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public class Database<PK extends Serializable, T extends me.opkarol.oporm.DatabaseEntity<PK>> {
+public class Database<PK extends Serializable, T extends DatabaseEntity<PK>> {
     private final DatabaseHolder<PK, T> databaseHandler;
 
     public Database(Class<T> clazz, Class<T[]> clazzArray) {
@@ -63,7 +64,7 @@ public class Database<PK extends Serializable, T extends me.opkarol.oporm.Databa
     }
 
     public List<DatabaseSettings.Type> getTypes() {
-        return List.of(DatabaseSettings.Type.FLAT, DatabaseSettings.Type.SQL, DatabaseSettings.Type.JSON);
+        return List.of(DatabaseSettings.Type.JSON);
     }
 
     public boolean useMultiFilesForJSON() {

@@ -1,7 +1,7 @@
 package me.opkarol.oplibrary.database.manager;
 
-import me.opkarol.oporm.DatabaseEntity;
 
+import me.opkarol.oplibrary.database.DatabaseEntity;
 import java.io.Serializable;
 import java.util.List;
 

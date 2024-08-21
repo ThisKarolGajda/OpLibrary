@@ -3,6 +3,7 @@ package me.opkarol.oplibrary;
 import me.opkarol.oplibrary.autostart.OpAutoDisable;
 import me.opkarol.oplibrary.commands.CommandRegister;
 import me.opkarol.oplibrary.commands.annotations.Command;
+import me.opkarol.oplibrary.database.DatabaseEntity;
 import me.opkarol.oplibrary.database.manager.DatabaseFactory;
 import me.opkarol.oplibrary.database.manager.DatabaseHolder;
 import me.opkarol.oplibrary.debug.PluginDebugger;
@@ -24,7 +25,6 @@ import me.opkarol.oplibrary.tools.Heads;
 import me.opkarol.oplibrary.tools.MathUtils;
 import me.opkarol.oplibrary.util.ClassFinder;
 import me.opkarol.oplibrary.wrappers.*;
-import me.opkarol.oporm.DatabaseEntity;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
@@ -36,7 +36,6 @@ import org.bukkit.boss.BarStyle;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -380,18 +379,9 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
         return DatabaseFactory.createJSON(lastPartOfClassName, clazz, clazzArray, false);
     }
 
-    @Contract("_ -> new")
-    public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseHolder<PK, T> getFlatDatabase(String fileName) {
-        return DatabaseFactory.createFlat(Plugin.getInstance(), fileName);
-    }
 
     public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseHolder<PK, T> getJSONDatabase(Class<T> clazz, Class<T[]> classArray, String fileName) {
         return DatabaseFactory.createJSON(fileName, clazz, classArray, false);
-    }
-
-    @Contract("_, _, _, _ -> new")
-    public static <PK extends Serializable, T extends DatabaseEntity<PK>> @NotNull DatabaseHolder<PK, T> getSQLDatabase(Class<T> clazz, String url, String host, String password) {
-        return DatabaseFactory.createSql(url, host, password, clazz);
     }
 
     public CommandRegister getCommandRegister() {
