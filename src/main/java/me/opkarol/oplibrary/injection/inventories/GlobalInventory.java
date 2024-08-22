@@ -22,7 +22,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class GlobalInventory implements Cloneable {
+@SuppressWarnings("unused")
+public class GlobalInventory {
     private final int rows;
     private String title;
     private List<GlobalItem> items = new LinkedList<>();
@@ -53,11 +54,11 @@ public class GlobalInventory implements Cloneable {
         this.clickEventConsumer = clickEventConsumer;
     }
 
-    private static final GlobalItem PREVIOUS_PAGE = new GlobalItem("previous-page", "Poprzednia strona", List.of(), -1, Heads.get("bd69e06e5dadfd84e5f3d1c21063f2553b2fa945ee1d4d7152fdc5425bc12a9"), click -> {
+    public static GlobalItem PREVIOUS_PAGE = new GlobalItem("previous-page", "Poprzednia strona", List.of(), -1, Heads.get("bd69e06e5dadfd84e5f3d1c21063f2553b2fa945ee1d4d7152fdc5425bc12a9"), click -> {
     });
-    private static final GlobalItem NEXT_PAGE = new GlobalItem("next-page", "Następna strona", List.of(), -1, Heads.get("19bf3292e126a105b54eba713aa1b152d541a1d8938829c56364d178ed22bf"), click -> {
+    public static GlobalItem NEXT_PAGE = new GlobalItem("next-page", "Następna strona", List.of(), -1, Heads.get("19bf3292e126a105b54eba713aa1b152d541a1d8938829c56364d178ed22bf"), click -> {
     });
-    private static final GlobalItem HOME_PAGE = new GlobalItem("home-page", "Wróć", List.of(), -1, Heads.get("8652e2b936ca8026bd28651d7c9f2819d2e923697734d18dfdb13550f8fdad5f"), click -> {
+    public static GlobalItem HOME_PAGE = new GlobalItem("home-page", "Wróć", List.of(), -1, Heads.get("8652e2b936ca8026bd28651d7c9f2819d2e923697734d18dfdb13550f8fdad5f"), click -> {
     });
 
     public GlobalInventory(String title, int rows) {
@@ -175,7 +176,7 @@ public class GlobalInventory implements Cloneable {
 
     public void open(Player player) {
         List<GlobalItem> displayedItems = new ArrayList<>();
-        Inventory inventory = Bukkit.createInventory(new GlobalInventoryHandler(displayedItems, clickEventConsumer, dragEventConsumer), rows * 9, getTitle());
+        Inventory inventory = Bukkit.createInventory(new GlobalInventoryHandler(this, clickEventConsumer, dragEventConsumer), rows * 9, getTitle());
 
         ItemBuilder filler = (this.filler != null) ? this.filler : new ItemBuilder(Material.BLACK_STAINED_GLASS_PANE).setName("&k");
         fillInventoryBorders(inventory, filler);
@@ -184,12 +185,8 @@ public class GlobalInventory implements Cloneable {
         int endIndex = Math.min(startIndex + getItemsPerPage(), getUnsetItems().size());
         List<GlobalItem> globalItems = getUnsetItems().subList(startIndex, endIndex);
 
-        System.out.println("Start index: " + startIndex);
-        System.out.println("End index: " + endIndex);
-        System.out.println("Current page: " + currentPage);
-
         for (GlobalItem item : globalItems) {
-            item = item.clone();
+            item = item.copy();
             int slot = findAvailableSlot(inventory);
             if (slot != -1) {
                 item.setSlot(slot);
@@ -202,11 +199,14 @@ public class GlobalInventory implements Cloneable {
         addPaginationControls(player, inventory, displayedItems);
 
         for (GlobalItem item : getSetItems()) {
-            item = item.clone();
+            item = item.copy();
             setItem(player, item, inventory, displayedItems);
         }
 
-        ((GlobalInventoryHandler) inventory.getHolder()).setItems(displayedItems);
+        GlobalInventoryHandler handler = (GlobalInventoryHandler) inventory.getHolder();
+        if (handler != null) {
+            handler.setDisplayedItems(displayedItems);
+        }
 
         if (fillShape != null) {
             if (filler == null) {
@@ -304,69 +304,51 @@ public class GlobalInventory implements Cloneable {
         return -1;
     }
 
-    private boolean shouldFillSlot(@NotNull FillType fillType, Inventory inventory, int slot) {
+    private boolean shouldFillSlot(@NotNull FillType fillType, @NotNull Inventory inventory, int slot) {
+        ItemStack item = inventory.getItem(slot);
         return switch (fillType) {
-            case EMPTY -> inventory.getItem(slot) == null || inventory.getItem(slot).getType() == Material.AIR;
+            case EMPTY -> item == null || item.getType() == Material.AIR;
             case SOLID -> true;
-            case CUSTOM -> true;
         };
     }
 
     private void addPaginationControls(Player player, @NotNull Inventory inventory, List<GlobalItem> displayedItems) {
         if (homePageAction != null) {
-            GlobalItem home = HOME_PAGE.clone();
+            GlobalItem home = HOME_PAGE.copy();
             home.setSlot(inventory.getSize() - 5);
             home.setConsumer(click -> {
                 click.cancel();
                 homePageAction.accept(click.getPlayer());
             });
             setItem(player, home, inventory, displayedItems);
-
-            GlobalItem previous = PREVIOUS_PAGE.clone();
-            previous.setSlot(inventory.getSize() - 6);
-            previous.setConsumer(click -> {
-                click.cancel();
-                if (currentPage > 1) {
-                    setCurrentPage(currentPage - 1);
-                    open(click.getPlayer());
-                }
-            });
-            setItem(player, previous, inventory, displayedItems);
-
-            GlobalItem next = NEXT_PAGE.clone();
-            next.setSlot(inventory.getSize() - 4);
-            next.setConsumer(click -> {
-                click.cancel();
-                if (!((currentPage) * getItemsPerPage() >= getUnsetItems().size())) {
-                    setCurrentPage(currentPage + 1);
-                    open(click.getPlayer());
-                }
-            });
-            setItem(player, next, inventory, displayedItems);
-
+            addBasicPaginationControl(player, inventory, displayedItems);
         } else {
-            GlobalItem previous = PREVIOUS_PAGE.clone();
-            previous.setSlot(inventory.getSize() - 6);
-            previous.setConsumer(click -> {
-                click.cancel();
-                if (currentPage > 1) {
-                    setCurrentPage(currentPage - 1);
-                    open(click.getPlayer());
-                }
-            });
-            setItem(player, previous, inventory, displayedItems);
-
-            GlobalItem next = NEXT_PAGE.clone();
-            next.setSlot(inventory.getSize() - 4);
-            next.setConsumer(click -> {
-                click.cancel();
-                if (!((currentPage) * getItemsPerPage() >= getUnsetItems().size())) {
-                    setCurrentPage(currentPage + 1);
-                    open(click.getPlayer());
-                }
-            });
-            setItem(player, next, inventory, displayedItems);
+            addBasicPaginationControl(player, inventory, displayedItems);
         }
+    }
+
+    private void addBasicPaginationControl(Player player, @NotNull Inventory inventory, List<GlobalItem> displayedItems) {
+        GlobalItem previous = PREVIOUS_PAGE.copy();
+        previous.setSlot(inventory.getSize() - 6);
+        previous.setConsumer(click -> {
+            click.cancel();
+            if (currentPage > 1) {
+                setCurrentPage(currentPage - 1);
+                open(click.getPlayer());
+            }
+        });
+        setItem(player, previous, inventory, displayedItems);
+
+        GlobalItem next = NEXT_PAGE.copy();
+        next.setSlot(inventory.getSize() - 4);
+        next.setConsumer(click -> {
+            click.cancel();
+            if (!((currentPage) * getItemsPerPage() >= getUnsetItems().size())) {
+                setCurrentPage(currentPage + 1);
+                open(click.getPlayer());
+            }
+        });
+        setItem(player, next, inventory, displayedItems);
     }
 
     public int getCurrentPage() {
@@ -386,7 +368,7 @@ public class GlobalInventory implements Cloneable {
         GlobalItem item = new GlobalItem(id, name, lore, -1, itemStack, (click) -> {
         });
         for (K k : list) {
-            GlobalItem clone = item.clone();
+            GlobalItem clone = item.copy();
             clone.setConsumer(click -> onClick.accept(k, click));
             clone.setReplacements(player -> replacements.apply(k, player));
             clone.setSlot(-1);
@@ -401,7 +383,7 @@ public class GlobalInventory implements Cloneable {
         GlobalItem item = new GlobalItem(id, name, lore, -1, itemStack, (click) -> {
         });
         for (K k : list) {
-            GlobalItem clone = item.clone();
+            GlobalItem clone = item.copy();
             clone.setConsumer(click -> onClick.accept(k, click));
             clone.setSlot(-1);
             items.add(clone);
@@ -437,7 +419,6 @@ public class GlobalInventory implements Cloneable {
     public enum FillType {
         EMPTY,
         SOLID,
-        CUSTOM,
     }
 
     public enum FillShape {
@@ -446,10 +427,5 @@ public class GlobalInventory implements Cloneable {
         CROSS,
         CENTER,
         DIAGONAL,
-    }
-
-    @Override
-    public GlobalInventory clone() {
-        return new GlobalInventory(title, rows, items, homePageAction, hasList, fillType, fillShape, filler, dragEventConsumer, currentPage, clickEventConsumer);
     }
 }

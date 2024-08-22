@@ -9,6 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static me.opkarol.oplibrary.gson.GsonBuilder.gson;
 
@@ -19,6 +22,7 @@ public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>>
     private final Class<T> clazz;
     private final String fileName;
     private Map<PK, T> cache;
+    private final ExecutorService executorService = Executors.newFixedThreadPool(1); // Fixed thread pool with one thread
 
     public JSONDatabase(String fileName, Class<T> clazz, Class<T[]> classArray, boolean useMultiFiles) {
         this.classArray = classArray;
@@ -34,8 +38,10 @@ public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>>
 
     @Override
     public void save(T t) {
-        cache.put(t.getId(), t);
-        saveToFile(t);
+        executorService.execute(() -> {
+            cache.put(t.getId(), t);
+            saveToFile(t);
+        });
     }
 
     @Override
@@ -51,8 +57,10 @@ public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>>
 
     @Override
     public void delete(PK id) {
-        cache.remove(id);
-        deleteFromFile(id);
+        executorService.execute(() -> {
+            cache.remove(id);
+            deleteFromFile(id);
+        });
     }
 
     @Override
@@ -62,7 +70,12 @@ public class JSONDatabase<PK extends Serializable, T extends DatabaseEntity<PK>>
 
     @Override
     public void onDisable() {
-
+        executorService.shutdown();
+        try {
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void initializeCache() {

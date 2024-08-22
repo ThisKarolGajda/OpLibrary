@@ -8,20 +8,22 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class GlobalInventoryHandler implements InventoryHolder {
-    private List<GlobalItem> globalItemList;
+    private List<GlobalItem> displayedItems = new ArrayList<>();
+    private final GlobalInventory globalInventory;
     @Nullable
     private final Consumer<InventoryClickEvent> clickEventConsumer;
     @Nullable
     private final Consumer<InventoryDragEvent> dragEventConsumer;
 
-    public GlobalInventoryHandler(List<GlobalItem> globalItemList,
+    public GlobalInventoryHandler(GlobalInventory globalInventory,
                                   @Nullable Consumer<InventoryClickEvent> clickEventConsumer,
                                   @Nullable Consumer<InventoryDragEvent> dragEventConsumer) {
-        this.globalItemList = globalItemList;
+        this.globalInventory = globalInventory;
         this.clickEventConsumer = clickEventConsumer;
         this.dragEventConsumer = dragEventConsumer;
     }
@@ -33,14 +35,14 @@ public class GlobalInventoryHandler implements InventoryHolder {
     }
 
     public GlobalItem get(Player player, int slot) {
-        return globalItemList.stream()
+        return globalInventory.getItems().stream()
                 .filter(globalItem -> globalItem.getSlot() == slot)
                 .findFirst()
                 .orElse(null);
     }
 
-    public List<GlobalItem> getGlobalItemList() {
-        return globalItemList;
+    public GlobalInventory getGlobalInventory() {
+        return globalInventory;
     }
 
     @Nullable
@@ -53,7 +55,11 @@ public class GlobalInventoryHandler implements InventoryHolder {
         return dragEventConsumer;
     }
 
-    public void setItems(List<GlobalItem> displayedItems) {
-        this.globalItemList = displayedItems;
+    public void setDisplayedItems(List<GlobalItem> displayedItems) {
+        this.displayedItems = displayedItems;
+    }
+
+    public List<GlobalItem> getDisplayedItems() {
+        return displayedItems;
     }
 }

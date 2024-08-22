@@ -3,7 +3,6 @@ package me.opkarol.oplibrary.injection.inventories.items;
 import me.opkarol.oplibrary.injection.IgnoreInject;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -13,7 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 @IgnoreInject
-public final class GlobalItem implements Cloneable {
+public final class GlobalItem {
     private final String id;
     private String name;
     private List<String> lore;
@@ -124,9 +123,7 @@ public final class GlobalItem implements Cloneable {
         this.slot = slot;
     }
 
-    @Contract(value = " -> new", pure = true)
-    @Override
-    public @NotNull GlobalItem clone() {
+    public @NotNull GlobalItem copy() {
         return new GlobalItem(id, name, lore, slot, itemStack, replacements, consumer);
     }
 

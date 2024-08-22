@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("unused")
 public class InventoriesInjectionManager {
     @Inject
     private static InventoriesManager inventoriesManager;
@@ -77,12 +78,12 @@ public class InventoriesInjectionManager {
                     try {
                         String id = "common";
                         GlobalItem item = (GlobalItem) field.get(null);
-                        String name = inventoriesManager.getItemName(id, item.getId(), item.getName());
+                        String name = inventoriesManager.getItemName(id, item.getId(), textFormatter.formatItemName(item.getName()));
                         inventoriesManager.setItemName(id, item.getId(), name);
                         item.setName(name);
                         debugger.debug("Setting item name of " + item.getId() + " to " + name);
 
-                        List<String> lore = inventoriesManager.getItemLore(id, item.getId(), item.getLore());
+                        List<String> lore = inventoriesManager.getItemLore(id, item.getId(), textFormatter.formatItemLore(item.getLore()));
                         inventoriesManager.setItemLore(id, item.getId(), lore);
                         item.setLore(lore);
                         debugger.debug("Setting lore of " + item.getId() + " to " + lore);

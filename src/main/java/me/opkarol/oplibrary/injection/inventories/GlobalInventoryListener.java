@@ -38,7 +38,7 @@ public class GlobalInventoryListener extends Listener {
                 return;
             }
 
-            List<GlobalItem> items = holder.getGlobalItemList();
+            List<GlobalItem> items = holder.getDisplayedItems();
             if (items == null) {
                 event.setCancelled(true);
                 event.setResult(Event.Result.DENY);
@@ -52,7 +52,7 @@ public class GlobalInventoryListener extends Listener {
                 return;
             }
 
-            item.getConsumer().accept(new ItemClick(event));
+            item.getConsumer().accept(new ItemClick(event, holder.getGlobalInventory()));
         }
     }
 
