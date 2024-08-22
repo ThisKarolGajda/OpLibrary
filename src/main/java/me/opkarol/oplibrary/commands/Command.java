@@ -26,8 +26,9 @@ public class Command extends BukkitCommand {
     private Method commandMethod;
     private Method noUseMethod;
 
-    private static StringMessage YOU_DONT_HAVE_PERMISSION = new StringMessage("You don't have permission to use this command");
-    private static StringMessage YOU_ARE_ON_COOLDOWN = new StringMessage("You need to wait before trying again");
+    public static StringMessage YOU_DONT_HAVE_PERMISSION = new StringMessage("Nie masz pozwolenia na używanie tej komendy!");
+    public static StringMessage YOU_ARE_ON_COOLDOWN = new StringMessage("Musisz poczekać zanim ponownie to zrobisz!");
+    public static StringMessage DEFAULT_NO_USE_WITH_ARGS = StringMessage.arg("Niepoprawne użycie polecenia, użyj: %args%.", use -> Map.of("%args%", use.toString()));
 
     public Command(@NotNull Class<?> clazz) {
         super(clazz.getAnnotation(me.opkarol.oplibrary.commands.annotations.Command.class).value());
@@ -174,6 +175,9 @@ public class Command extends BukkitCommand {
                 }
             } catch (IllegalAccessException | InvocationTargetException ignore) {
             }
+        } else {
+            String builtPath = "/" + getName() + " {" + String.join("/", subCommands.keySet()) + "}";
+            DEFAULT_NO_USE_WITH_ARGS.send(player, builtPath);
         }
     }
 

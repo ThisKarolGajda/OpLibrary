@@ -124,7 +124,9 @@ public final class GlobalItem {
     }
 
     public @NotNull GlobalItem copy() {
-        return new GlobalItem(id, name, lore, slot, itemStack, replacements, consumer);
+        List<String> loreCopy = new ArrayList<>(lore);
+        ItemStack itemStackCopy = itemStack != null ? itemStack.clone() : null;
+        return new GlobalItem(id, name, loreCopy, slot, itemStackCopy, replacements, consumer);
     }
 
     @Override

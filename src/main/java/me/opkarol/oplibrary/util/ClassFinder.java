@@ -29,7 +29,7 @@ public class ClassFinder extends Helper {
         cachedClasses = new HashSet<>();
 
         // Get GlobalHelper classes
-        findClassesRecursively(me.opkarol.oplibrary.Plugin.class.getPackage().getName().replace("/", "."), cachedClasses);
+        findClassesRecursively("me.opkarol.oplibrary", cachedClasses);
 
         // Get plugin classes
         String packageName = plugin.getClass().getPackage().getName().replace("/", ".");

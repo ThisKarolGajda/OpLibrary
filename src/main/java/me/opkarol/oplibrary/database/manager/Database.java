@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
-public class Database<PK extends Serializable, T extends DatabaseEntity<PK>> {
+public abstract class Database<PK extends Serializable, T extends DatabaseEntity<PK>> {
     private final DatabaseHolder<PK, T> databaseHandler;
 
     public Database(Class<T> clazz, Class<T[]> clazzArray) {
@@ -61,10 +61,6 @@ public class Database<PK extends Serializable, T extends DatabaseEntity<PK>> {
             consumer.accept(t);
             return true;
         }).orElse(false);
-    }
-
-    public List<DatabaseSettings.Type> getTypes() {
-        return List.of(DatabaseSettings.Type.JSON);
     }
 
     public boolean useMultiFilesForJSON() {

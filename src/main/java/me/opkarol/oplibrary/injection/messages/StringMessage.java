@@ -12,18 +12,29 @@ import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public final class StringMessage {
-    private final Function<Player, Map<String, String>> formatterFunction;
+    private final Function<Player, Map<String, String>> playerFormatterFunction;
+    private final Function<Object, Map<String, String>> formatterFunction;
     private final String defaultMessage;
     private String object;
 
     public StringMessage(String defaultMessage) {
         this.defaultMessage = defaultMessage;
+        this.playerFormatterFunction = null;
         this.formatterFunction = null;
     }
 
-    public StringMessage(String defaultMessage, Function<Player, Map<String, String>> formatterFunction) {
-        this.formatterFunction = formatterFunction;
+    public StringMessage(String defaultMessage, Function<Object, Map<String, String>> formatterFunction, Function<Player, Map<String, String>> playerFormatterFunction) {
         this.defaultMessage = defaultMessage;
+        this.formatterFunction = formatterFunction;
+        this.playerFormatterFunction = playerFormatterFunction;
+    }
+
+    public static StringMessage player(String defaultMessage, Function<Player, Map<String, String>> playerFormatterFunction) {
+        return new StringMessage(defaultMessage, null, playerFormatterFunction);
+    }
+
+    public static StringMessage arg(String defaultMessage, Function<Object, Map<String, String>> formatterFunction) {
+        return new StringMessage(defaultMessage, formatterFunction, null);
     }
 
     public String get() {
@@ -31,8 +42,24 @@ public final class StringMessage {
     }
 
     public void send(@NotNull Player player) {
+        if (playerFormatterFunction != null) {
+            send(player, playerFormatterFunction.apply(player));
+        } else {
+            player.sendMessage(getFormatted());
+        }
+    }
+
+    public void send(@NotNull Player player, Player target) {
+        if (playerFormatterFunction != null) {
+            send(player, playerFormatterFunction.apply(target));
+        } else {
+            player.sendMessage(getFormatted());
+        }
+    }
+
+    public void send(Player player, @NotNull Object arg) {
         if (formatterFunction != null) {
-            send(player, formatterFunction.apply(player));
+            send(player, formatterFunction.apply(arg));
         } else {
             player.sendMessage(getFormatted());
         }
@@ -90,8 +117,12 @@ public final class StringMessage {
 
     @Override
     public String toString() {
-        return "StringMessage[" +
-                "defaultMessage=" + defaultMessage + ']';
+        return "StringMessage{" +
+                "defaultMessage='" + defaultMessage + '\'' +
+                ", playerFormatterFunction=" + playerFormatterFunction +
+                ", formatterFunction=" + formatterFunction +
+                ", object='" + object + '\'' +
+                '}';
     }
 
     void setObject(String object) {

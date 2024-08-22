@@ -4,6 +4,7 @@ import me.opkarol.oplibrary.autostart.OpAutoDisable;
 import me.opkarol.oplibrary.commands.CommandRegister;
 import me.opkarol.oplibrary.commands.annotations.Command;
 import me.opkarol.oplibrary.database.DatabaseEntity;
+import me.opkarol.oplibrary.database.manager.Database;
 import me.opkarol.oplibrary.database.manager.DatabaseFactory;
 import me.opkarol.oplibrary.database.manager.DatabaseHolder;
 import me.opkarol.oplibrary.debug.PluginDebugger;
@@ -11,6 +12,7 @@ import me.opkarol.oplibrary.injection.DependencyInjection;
 import me.opkarol.oplibrary.injection.config.ConfigInjectionManager;
 import me.opkarol.oplibrary.injection.config.ConfigManager;
 import me.opkarol.oplibrary.injection.formatter.DefaultTextFormatter;
+import me.opkarol.oplibrary.injection.inventories.injection.InventoriesInjectionManager;
 import me.opkarol.oplibrary.injection.inventories.injection.InventoriesManager;
 import me.opkarol.oplibrary.injection.messages.MessagesInjectionManager;
 import me.opkarol.oplibrary.injection.messages.MessagesManager;
@@ -403,24 +405,36 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
     public void onEnable() {
         registerConfigurationSerialization();
 
-        // Plugin initialization
+        getLogger().info("Plugin initialization");
         DependencyInjection.register(this);
 
         DependencyInjection.register(new PluginDebugger(this));
         DependencyInjection.registerInject(new ClassFinder(this));
         DependencyInjection.autoInject(PluginDebugger.class);
 
+        getLogger().info(getClass().getName() + " initialization");
         DependencyInjection.autoInject(this.getClass());
 
-        // Files initialization
+        getLogger().info("Files initialization");
         DependencyInjection.registerInject(new ConfigManager(this));
         DependencyInjection.registerInject(new MessagesManager(this));
         DependencyInjection.registerInject(new InventoriesManager(this));
-
         DependencyInjection.registerInject(new DefaultTextFormatter());
+        ConfigInjectionManager.autoInject();
+        MessagesInjectionManager.autoInject();
+        InventoriesInjectionManager.autoInject();
 
         // Listeners and Commands
+        getLogger().info("Registering Databases, Listeners and Commands");
         for (Class<?> clazz : get(ClassFinder.class).findAllClassesUsingClassLoader()) {
+            // Database
+            if (Database.class.isAssignableFrom(clazz)) {
+                try {
+                    DependencyInjection.registerInject(clazz.getDeclaredConstructor().newInstance());
+                } catch (Exception ignore) {
+                }
+            }
+
             // Listener
             if (Listener.class.isAssignableFrom(clazz)) {
                 try {
@@ -435,9 +449,12 @@ public abstract class Plugin extends JavaPlugin implements PluginSettings {
             }
         }
 
+        getLogger().info("Initializing constructors");
         DependencyInjection.initializeConstructors();
 
+        getLogger().info("Enabling plugin");
         enable();
+        getLogger().info("Registering bstats");
         registerBStats();
     }
 

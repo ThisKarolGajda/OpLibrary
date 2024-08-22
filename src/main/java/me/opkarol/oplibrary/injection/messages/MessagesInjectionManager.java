@@ -16,11 +16,6 @@ public class MessagesInjectionManager {
     @Inject
     private static DefaultTextFormatter textFormatter;
 
-    @Inject
-    public MessagesInjectionManager() {
-        autoInject();
-    }
-
     public static void autoInject() {
         Set<Class<?>> set = DependencyInjection.get(ClassFinder.class).findAllClassesUsingClassLoader();
         PluginDebugger debugger = DependencyInjection.get(PluginDebugger.class);

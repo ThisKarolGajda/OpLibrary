@@ -1,6 +1,7 @@
 package me.opkarol.oplibrary.injection.file;
 
 import me.opkarol.oplibrary.util.Helper;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -8,6 +9,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileManager extends Helper {
     private final Plugin plugin;
@@ -29,6 +32,7 @@ public class FileManager extends Helper {
                 }
 
                 configFile.createNewFile();
+                loadConfig();
                 saveConfig();
             } catch (IOException e) {
                 debug("Could not create config file: " + configFile.getAbsolutePath());
@@ -41,6 +45,20 @@ public class FileManager extends Helper {
     }
 
     public <T> @NotNull T getValue(String key, T defaultType) {
+        if (defaultType instanceof Map) {
+            ConfigurationSection section = config.getConfigurationSection(key);
+            if (section == null) {
+                return defaultType;
+            }
+
+            Map<String, Object> resultMap = new HashMap<>();
+            for (String subKey : section.getKeys(false)) {
+                resultMap.put(subKey, section.get(subKey));
+            }
+
+            return (T) resultMap;
+        }
+
         Object value = config.get(key);
         return (T) (value != null ? value : defaultType);
     }

@@ -1,7 +1,6 @@
 package me.opkarol.oplibrary.injection.inventories;
 
 import me.opkarol.oplibrary.injection.inventories.items.GlobalItem;
-import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.Inventory;
@@ -34,8 +33,8 @@ public class GlobalInventoryHandler implements InventoryHolder {
         return null;
     }
 
-    public GlobalItem get(Player player, int slot) {
-        return globalInventory.getItems().stream()
+    public GlobalItem get(int slot) {
+        return displayedItems.stream()
                 .filter(globalItem -> globalItem.getSlot() == slot)
                 .findFirst()
                 .orElse(null);

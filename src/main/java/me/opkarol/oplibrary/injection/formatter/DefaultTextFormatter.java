@@ -20,26 +20,26 @@ public class DefaultTextFormatter implements IFormatter {
     @Config
     public static ColorWrapper secondaryColor = new ColorWrapper(Color.YELLOW);
     @Config
-    public static ColorWrapper basicColor = new ColorWrapper(Color.GRAY);
+    public static ColorWrapper basicColor = new ColorWrapper(Color.fromRGB(0xD3D3D3));
+    @Config
+    public static ColorWrapper shadowColor = new ColorWrapper(Color.fromRGB(0x545454));
     @Config
     private static String messageStartText = primaryColor.toCode() + "☁ " + basicColor.toCode();
     @Config
     private static String messageReplacementText = secondaryColor.toCode() + "%replace%" + basicColor.toCode();
     @Config
-    private static String titleStartText = basicColor.toCode();
-    @Config
-    private static String itemNameStartText = primaryColor.toCode();
+    private static String titleStartText = "";
 
     private static final Pattern PLACEHOLDER_PATTERN = Pattern.compile("%(.*?)%");
 
     @Override
     public String formatMessage(String input) {
-        return enabled ? format(input, null) : input;
+        return enabled ? messageStartText + format(input, null)  : input;
     }
 
     @Override
     public String formatMessage(String input, Map<String, String> replacements) {
-        return enabled ? format(input, replacements) : replacePlaceholders(input, replacements);
+        return enabled ? messageStartText + format(input, replacements) : replacePlaceholders(input, replacements);
     }
 
     @Override
@@ -65,16 +65,6 @@ public class DefaultTextFormatter implements IFormatter {
         return titleStartText + input;
     }
 
-    @Override
-    public String formatItemName(String input) {
-        return itemNameStartText + input;
-    }
-
-    @Override
-    public List<String> formatItemLore(List<String> input) {
-        return input;
-    }
-
     private @NotNull String format(String input, Map<String, String> replacements) {
         Matcher matcher = PLACEHOLDER_PATTERN.matcher(input);
         StringBuilder result = new StringBuilder();
@@ -86,7 +76,7 @@ public class DefaultTextFormatter implements IFormatter {
         }
         matcher.appendTail(result);
 
-        return messageStartText + result;
+        return result.toString();
     }
 
     private String replacePlaceholders(String input, @NotNull Map<String, String> replacements) {

@@ -33,6 +33,10 @@ public record ItemClick(InventoryClickEvent event, GlobalInventory globalInvento
         message.send(getPlayer());
     }
 
+    public void sendMessage(String message) {
+        new StringMessage(message).send(getPlayer());
+    }
+
     public GlobalInventory getInventory() {
         return globalInventory;
     }

@@ -3,7 +3,6 @@ package me.opkarol.oplibrary.injection.inventories;
 import me.opkarol.oplibrary.injection.inventories.items.GlobalItem;
 import me.opkarol.oplibrary.injection.inventories.items.ItemClick;
 import me.opkarol.oplibrary.listeners.Listener;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.inventory.ClickType;
@@ -45,7 +44,7 @@ public class GlobalInventoryListener extends Listener {
                 return;
             }
 
-            GlobalItem item = holder.get((Player) event.getWhoClicked(), event.getSlot());
+            GlobalItem item = holder.get(event.getSlot());
             if (item == null) {
                 event.setCancelled(true);
                 event.setResult(Event.Result.DENY);
